@@ -6,23 +6,24 @@ extern ESPTelnet telnet;
 
 #define FY6800 1
 #define FY6900 2
+#define JDS2800 3
 
-/* Select the FY6900 or FY6800 AWG*/
-#define AWG FY6900
+/* Select the FY6900, FY6800 or JDS2800 AWG*/
+#define AWG JDS2800
 
 /* Select either AP or CLIENT mode:
     - AP - creates new network that oscilloscope can connect to
     - CLIENT - joins existing network
     */
-#define WIFI_MODE_AP
-//#define WIFI_MODE_CLIENT
+//#define WIFI_MODE_AP
+#define WIFI_MODE_CLIENT
 
 /* WiFi credentials */
 #define WIFI_SSID             "wlan_ssid"
 #define WIFI_PSK              "wlan_key"
 
 /* Comment this for DHCP. However you'll need to obtain IP somehow. */
-//#define STATIC_IP
+#define STATIC_IP
 
 /* Static ip configuration */
 #ifdef STATIC_IP

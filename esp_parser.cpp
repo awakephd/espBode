@@ -4,6 +4,8 @@
   #include "esp_fy6800.h"
 #elif AWG == FY6900
   #include "esp_fy6900.h"
+#elif AWG == JDS2800
+  #include "esp_jds2800.h"
 #endif
 
 volatile char *gReadBuffer = NULL;
