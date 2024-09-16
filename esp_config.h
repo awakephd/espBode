@@ -4,12 +4,13 @@
 #include "ESPTelnet.h"
 extern ESPTelnet telnet;
 
-#define FY6800 1
-#define FY6900 2
-#define JDS2800 3
+#define FY3200  1
+#define FY6800  2
+#define FY6900  3
+#define JDS2800 4
 
-/* Select the FY6900, FY6800 or JDS2800 AWG*/
-#define AWG JDS2800
+/* Select the FY3200 or FY6900 or FY6800 type AWG*/
+#define AWG FY6900
 
 /* Select either AP or CLIENT mode:
     - AP - creates new network that oscilloscope can connect to
@@ -19,20 +20,20 @@ extern ESPTelnet telnet;
 #define WIFI_MODE_CLIENT
 
 /* WiFi credentials */
-#define WIFI_SSID             "wlan_ssid"
-#define WIFI_PSK              "wlan_key"
+#define WIFI_SSID             "wlan_ssid"         // replace with SSID of the wifi network the oscilloscope is attached to
+#define WIFI_PSK              "wlan_password"     // replace with the password for this network
 
 /* Comment this for DHCP. However you'll need to obtain IP somehow. */
 #define STATIC_IP
 
 /* Static ip configuration */
 #ifdef STATIC_IP
-  #define ESP_IP              192,168,1,6
+  #define ESP_IP              192,168,0,155       // Choose an IP address that is available on the network; for best results, reserve address in the router
   #define ESP_MASK            255,255,255,0
-  #define ESP_GW              192,168,1,1
+  #define ESP_GW              192,168,0,0         // Set the gateway as appropriate for the wifi network
 #endif
 
-#define ID                  "IDN-SGLT-PRI SDG1062X\n"
+#define ID                  "IDN-SGLT-PRI SDG1062X\n"   // ID used to simulate a Siglent AWG
 
 #define RPC_PORT            (111)
 #define LXI_PORT            (703)
@@ -58,5 +59,8 @@ extern ESPTelnet telnet;
 #else
   #define DEBUG(TEXT)         telnet.println(TEXT);
 #endif
+
+#define LED_ON  LOW           // the ESP-O1 requires a LOW to turn on the built-in LED
+#define LED_OFF HIGH
 
 #endif /* _ESP_CONFIG_H_ */

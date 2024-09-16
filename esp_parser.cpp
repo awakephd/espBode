@@ -1,6 +1,8 @@
 #include "esp_parser.h"
 
-#if AWG == FY6800
+#if AWG == FY3200
+  #include "esp_fy3200.h"
+#elif AWG == FY6800
   #include "esp_fy6800.h"
 #elif AWG == FY6900
   #include "esp_fy6900.h"

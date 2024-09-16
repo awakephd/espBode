@@ -3,8 +3,6 @@
 #ifndef _ESP_FY6900_H_
 #define _ESP_FY6900_H_
 
-#include <ESP8266WiFi.h>
-
 typedef enum
 {
     EWaveType_Sine          = 0,

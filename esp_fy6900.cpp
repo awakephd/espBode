@@ -6,6 +6,7 @@
 
 #include "esp_fy6900.h"
 
+uint32_t HULP = 0, AMP_HULP1, AMP_HULP2;
 volatile SDeviceState gDeviceState;
 
 bool fy6900_write(char* data, uint8_t len)
