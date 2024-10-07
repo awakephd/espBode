@@ -49,9 +49,19 @@ static int32_t parseDecimal(char *msg)
             msg++;
             continue;
         }
-        if(dot) multiplier/=10;
-        number*=10;
-        number+=msg[0]-'0';
+
+        if( dot) {
+          if ( multiplier > 1 ) { 
+            multiplier /=10;
+            number*=10;
+            number+=msg[0]-'0';
+          } 
+          
+        } else {
+            number*=10;
+            number+=msg[0]-'0';
+        }
+
         msg++;
     }
     return number*multiplier;
@@ -109,7 +119,7 @@ void handleWriteMsg(char *msg, uint8_t len)
         {
             msg+=4;
             len-=4;
-            selectedChannel==1?setCh1Freq(parseNumber(msg)):setCh2Freq(parseNumber(msg));
+            selectedChannel==1?setCh1Freq(parseDecimal(msg)):setCh2Freq(parseDecimal(msg));
         }
 
         if(0 == strncmp(msg, "AMP,", 4))

@@ -3,6 +3,17 @@
 #include "esp_config.h"
 #include "ESPTelnet.h"
 
+//#include "dump.h"
+//#include "utilities.h"
+
+#ifdef USE_UDP
+  #include <WiFiUdp.h>
+  #include <iostream>
+//  #include <string>
+  #include <sstream>
+  #include "handle_packets.h"
+#endif
+
 #if AWG == FY3200
   #include "esp_fy3200.h"
 #elif AWG == FY6800
@@ -15,8 +26,13 @@
   #error "Please select an AWG in esp_config.h"
 #endif
 
-WiFiServer rpc_server(RPC_PORT);
-WiFiServer lxi_server(LXI_PORT);
+#ifdef USE_UDP
+  WiFiUDP udp;
+#else
+  WiFiServer rpc_server(RPC_PORT);
+#endif
+
+WiFiServer lxi_server(0);
 ESPTelnet telnet;
 
 
@@ -142,7 +158,12 @@ void setup() {
 
     // Initialize the wifi servers
 
+#ifdef USE_UDP
+    udp.begin(RPC_PORT);
+#else
     rpc_server.begin();
+#endif
+
     lxi_server.begin();
 }
 
@@ -179,6 +200,44 @@ void loop() {
 
       case ls_wait_for_rpc:
         {
+#ifdef USE_UDP
+          int packetSize = udp.parsePacket();
+
+          if (packetSize) {
+            // receive incoming UDP packets
+            std::stringstream s;
+
+            s << "Received " << packetSize << " bytes from " << udp.remoteIP().toString().c_str() << ":" << udp.remotePort();
+
+            DEBUG(s.str().c_str());
+/*
+            int len = udp.read(udp_buffer, UDP_BUFFER_SIZE);
+
+            s = std::stringstream();
+
+            s << "Length = " << len;
+
+            DEBUG(s.str().c_str());
+
+            telnet.loop();
+
+            if (len > 0) {
+              DEBUG(dump(udp_buffer,len).c_str());
+            }
+*/
+            if ( handle_udp(udp) == 0 )
+              loop_state = ls_wait_for_lxi;
+              lxi_server.stop();
+
+              s = std::stringstream();
+              s << "Listening on port = " << uint32_t(port) << "(" << std::hex << uint32_t(port) << ")" << std::endl;
+
+              DEBUG(s.str().c_str());
+
+              lxi_server = WiFiServer(port++);
+              lxi_server.begin();
+          }
+#else
           WiFiClient  rpc_client = rpc_server.accept();
 
           if ( rpc_client ) {
@@ -186,12 +245,15 @@ void loop() {
             handlePacket(rpc_client);
             loop_state = ls_wait_for_lxi;
           }
+#endif
         }
 
         break;
 
       case ls_wait_for_lxi:
         {
+//          DEBUG("Waiting for LXI connection");
+
           WiFiClient  lxi_client = lxi_server.accept();
 
           if ( lxi_client ) {
@@ -204,6 +266,10 @@ void loop() {
             }
 
             digitalWrite(LED_BUILTIN, LED_OFF);                       // when processing is complete, turn off LED
+
+            loop_state = ls_wait_for_rpc;
+//          } else {
+//            DEBUG("LXI server not accepted");
           }
         }
 

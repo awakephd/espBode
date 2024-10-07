@@ -1,5 +1,6 @@
 #include "esp_config.h"
 #include <string.h>
+#include <sstream>
 
 #if AWG == FY6900
 #warning Compiling for FY6900
@@ -61,8 +62,8 @@ void setCh2Output(uint32_t output)
 /* Set frequency in Hz */
 void setCh1Freq(uint32_t frequency)
 {
-    char command[] = "WMF00000000000000\n";
-    snprintf(command, 19, "WMF%08lu000000\n", frequency);
+    char command[] = "WMA0000000000.000\n";
+    snprintf(command, 11, "WMA%010u.%03u\n", frequency/1000, frequency%1000);
     gDeviceState.ch1Freq = frequency;
     fy6900_write(command, 18);
 }
