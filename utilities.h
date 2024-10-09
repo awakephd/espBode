@@ -7,12 +7,15 @@
 
 A small utility function to allow visual user feedback by
 blinking the built-in LED a selected number of times at a
-selected interval (specified in milliseconds). Defined in
-utilities.cpp
+selected interval (specified in milliseconds). This function
+is declared here and defined in utilities.cpp only if the LED
+is used (signaled by USE_LED being defined).
 
 *****************************************************************/
 
-void blink ( int count, int interval );
+#ifdef USE_LED
+  void blink ( int count, int interval );
+#endif
 
 /************************************************
   std::byteswap is available in C++23. However,

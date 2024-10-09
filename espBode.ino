@@ -23,54 +23,13 @@
 #endif
 */
 
-ESPTelnet       Telnet;
+/*** global variables **************/
+
 VXI_Server      vxi_server;
 RPC_Bind_Server rpc_bind_server(vxi_server);
 Telnet_Server   telnet_server;
 
 
-/*** global variables **************/
-
-Loop_State  loop_state;             // tracks the current state for the main loop
-/*
-WiFiUDP     udp;                    // used to receive BIND requests via UDP
-WiFiServer  tcp_server(RPC_PORT);   // used to receive BIND requests via TCP
-WiFiServer  vxi_server(0);          // used to process VXI commands via TCP
-*/
-
-/*** callback function for enhanced telnet communication ********************************
-
-The telnet object will call this function whenever a line of data (terminated with an \n)
-is received. The string will be converted to upper case and trimmed of any leading or
-trailing whitespace. It will then be tested to see if it consists of the following command.
-If so, the command is processed and the results are reported back to the telnet client.
-
-  PASSTHROUGH - toggles the bPassThrough state
-
-If the string of data is not a recognized command, the callback function will either
-discard the string (if loop_state != ls_passthrough) or pass the string via the serial
-interface to the connected AWG (if loop_state == ls_passthrough).
-
-******************************************************************************************/
-/*
-void onTelnetInput ( String s ) {
-
-  s.trim();
-  s.toUpperCase();
-
-  if ( s == "PASSTHROUGH" ) {
-    loop_state = ( loop_state == ls_passthrough ) ? ls_ready_for_rpc : ls_passthrough;
-
-    Telnet.flush();
-
-    Telnet << "\n" << s << ( loop_state == ls_passthrough ? " ON" : " OFF" ) << "\n\n";
-
-  } else if ( loop_state == ls_passthrough ) {
-    Serial.println(s);
-  }
-}
-
-*/
 /*** WiFi setup *********************************************
 
 The WiFi setup is separated out from the rest of the setup()
@@ -100,7 +59,10 @@ void setup_WiFi ()
   #endif
 
   while (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));   // LED will blink slowly while attempting to connect
+
+#ifdef USE_LED
+    digitalWrite(LED_BUILTIN, ! digitalRead(LED_BUILTIN));    // LED will blink slowly while attempting to connect
+#endif
 
     if ( Debug.Channel() == DEBUG::VIA_SERIAL ) {
       Debug.Progress() << ". ";
@@ -110,10 +72,13 @@ void setup_WiFi ()
   }
 
   if ( Debug.Channel() == DEBUG::VIA_SERIAL ) {
-    Debug.Progress() << "\n\nWiFi connected; IP address = " << WiFi.localIP().toString() << "; MAC address = " << WiFi.macAddress() << "\n";
+    Debug.Progress() << "\nWiFi connected; IP address = " << WiFi.localIP().toString() << "; MAC address = " << WiFi.macAddress() << "\n\n";
   }
 
+#ifdef USE_LED
   blink(5,100);               // blink the LED 5 times quickly to confirm connection
+#endif
+
 }
 
 
@@ -131,12 +96,20 @@ void setup() {
 //  else
     Serial.begin(115200);
 
+#ifdef USE_LED
   pinMode(LED_BUILTIN, OUTPUT);
+#endif
 
-  // Set desired debug level and output channel
+  /*  Set desired debug level and output channel. Note that Telnet
+      debugging is unreliable with level = DETAIL - it appears that
+      Telnet gets overwhelmed with all of the input and output that
+      occurs at that level, and eventually the ESP-01 locks up. (This
+      happens even if the OnReceived call-back is eliminated.) Serial
+      debugging at level = DETAIL works flawlessly, and so does
+      Telnet debugging at level = PROGRESS  */
 
-  Debug.Via_Serial();
-  Debug.Level_Detail();
+  Debug.Via_Telnet();
+  Debug.Level_Progress();
 
   /*  Note that if Debug is directed to Telnet, anything sent to Debug at this point
       will effectively be lost since wifi is not yet connected. However, we do not want to
@@ -153,148 +126,27 @@ void setup() {
 
   setup_WiFi();
 
-  // Initialize telnet server
+  /*  Initiailize the various servers - telnet_server,
+      rpc_bind_server, and vxi_server.  */
 
-//  Telnet.onInputReceived(onTelnetInput);  // connect incoming messages to the callback routine above
-//  Telnet.begin();
-
-  // Initialize the wifi servers
-/*
-  udp.begin(RPC_PORT);
-  tcp_server.begin();
-  vxi_server.begin();
-*/
-  vxi_server.set_timeout(15000);     // if more than 2 seconds passes without any further packets, close the vxi_handler
+  vxi_server.set_timeout(5000);     // if more than 5 seconds passes without packets, close the vxi_handler
 
   vxi_server.begin();
   rpc_bind_server.begin();
   telnet_server.begin();
-
-  // Initialilze the initial "state" for the main loop
-
-//  loop_state = ls_ready_for_rpc;
 }
 
 
 /*** Arduino main loop: loop() **************************************
 
-The main loop will call Telnet.loop() to allow telnet processing
-to occur. After that, its action is based on the loop_state variable,
-Essentially, the loop waits for a valid BIND request to come in
-via either UDP or TCP. Once the BIND request has succeeded, it
-sets up vxi_server to listen on the next port in the queue, and
-continues to process any VXI commands that it receives until it
-receives the DESTROY_LINK command. At that point, it goes back to
-listening for the next BIND request.
+The main loop calls telnet_server.loop() to enable telnet processing
+and to process PASSTHROUGH commands. It calls rpc_bind_server.loop()
+to process any PORTMAP commands. It calls vxi_server.loop() to process
+any current VXI commands. Then it goes back and does it all again!
 
 **********************************************************************/
 
 void loop() {
-
-  // give telnet a chance to work
-
-//  Telnet.loop();
-
-  //  What happens next depends on the loop_state
-
-//  switch ( loop_state ) {
-    
-    /*  if loop_state == ls_passthrough, pass serial traffic to telnet;
-        note that the passthrough state is turned on or off by a
-        command sent to the telnet server.
-
-    case ls_passthrough:
-      while ( Serial.available() > 0 ) {
-        char c = Serial.read();
-
-        Telnet << c;
-      }
-
-      break;
-*/
-    /*  if loop_state == ls_ready_for_rpc, make preparations to listen for
-        a BIND request on either UDP or TCP.  */
-  /*      
-    case ls_ready_for_rpc:
-      Debug.Progress() << "\nListening for PORTMAP on UDP and TCP (Port:" << RPC_PORT << ")\n";
-
-      loop_state = ls_wait_for_rpc;
-
-      break;
-*/
-    /*  if loop_state == ls_wait_for_rpc, check for an rpc connection;
-        if successful, change state to ls_ready_for_vxi; otherwise,
-        keep waiting (loop back around).  */
-/*
-    case ls_wait_for_rpc:
-      {
-        int packetSize = udp.parsePacket();
-
-        if (packetSize) {
-          Debug.Progress() << "\nUDP packet received on port " << RPC_PORT << "\n";
-
-          if ( process_packet(udp,PORTMAP,RPC_GETPORT) == 0 ) {
-            loop_state = ls_ready_for_vxi;
-          }
-
-        } else {    // if no UDP packet, try TCP packet
-
-          WiFiClient  tcp_client = tcp_server.accept();
-
-          if ( tcp_client ) {
-            Debug.Progress() << "\nTCP packet received on port " << RPC_PORT << "\n";
-
-            if ( process_packet(tcp_client,PORTMAP,RPC_GETPORT) == 0 ) {
-              loop_state = ls_ready_for_vxi;
-            }
-          }
-        }
-      }
-
-      break;
-*/
-    /*  if loop_state == ls_ready_for_vxi, set up the vxi_server
-        to listen on the next available port,  */
-/*
-    case ls_ready_for_vxi:
-      Debug.Progress() << "Listening for VXI on port " << vxi_port() << "\n";
-
-      loop_state = ls_wait_for_vxi;
-  
-      break;
-*/
-    /*  if loop_state == ls_wait_for_vxi, check for a vxi connection;
-        if successful, process vxi commands until complete;
-        otherwise, keep waiting (loop back around).  */
-/*
-    case ls_wait_for_vxi:
-      {
-        WiFiClient  vxi_client = vxi_server.accept();
-
-        if ( vxi_client ) {
-          vxi_client.setTimeout(1000);
-
-          Debug.Progress() << "VXI connection established on port " << vxi_port() << "\n";
-
-          while ( process_packet(vxi_client) == 0 ) {
-            Telnet.loop();                                          // while we are processing commands, keep telnet working
-            digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));   // toggle LED to give visual feedback
-          }
-
-          digitalWrite(LED_BUILTIN, LED_OFF);                       // when processing is complete, turn off LED
-
-          loop_state = ls_ready_for_rpc;
-        }
-      }
-
-      break;
-*/
-//    default:
-
-//      break;
-    
-//  } // end switch
-
   telnet_server.loop();
   rpc_bind_server.loop();
   vxi_server.loop();

@@ -10,11 +10,14 @@
 
 const size_t  DEBUG_BUFFER_SIZE = 128;
 
-
 /**********************************************************
   The DEBUG class inherits from Print so that it can use
   all of its methods and so that it can respond to the
-  methods defined by Streaming.h
+  methods defined by Streaming.h. It buffers the characters
+  received in an internal buffer. This is not actually
+  necessary for Serial output, but Telnet output does not
+  seem to buffer adequately. Using the internal buffer
+  improves performance significantly.
 **********************************************************/
 
 class DEBUG : public Print

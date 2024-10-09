@@ -6,9 +6,12 @@
 
 A small utility function to allow visual user feedback by
 blinking the built-in LED a selected number of times at a
-selected interval (specified in milliseconds).
+selected interval (specified in milliseconds). This function
+is only defined if USE_LED is defined.
 
 *****************************************************************/
+
+#ifdef USE_LED
 
 void blink ( int count, int interval )
 {
@@ -19,3 +22,5 @@ void blink ( int count, int interval )
     delay(interval);
   }
 }
+
+#endif

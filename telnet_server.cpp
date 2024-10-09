@@ -3,19 +3,16 @@
 
 bool Telnet_Server::bPassThrough = false;
 
-/*  It would be preferable to "hide" the definition of the
-    global variable here, but the ESPTelnet service seems to
-    be sensitive to when it is created. Putting the definition
-    in the .ino file seems to be more reliable.  */
 
-//ESPTelnet Telnet;
+ESPTelnet Telnet;
 
 
 void Telnet_Server::begin ()
 {
-  Telnet.onInputReceived(onTelnetInput);  // connect incoming messages to the callback routine above
+   Telnet.onInputReceived(onTelnetInput);  // connect incoming messages to the callback routine above
   Telnet.begin();
 }
+
 
 void Telnet_Server::loop ()
 {
@@ -58,7 +55,7 @@ void Telnet_Server::onTelnetInput ( String input ) {
 
     Telnet.flush();
 
-    Telnet << "\n" << s << ( bPassThrough ? " ON" : " OFF" ) << "\n\n";
+    Telnet << "\n" << s << ( bPassThrough ? " ON" : " OFF" ) << "\n";
 
   } else if ( bPassThrough ) {
     Serial.println(input);

@@ -3,6 +3,7 @@
 #include "rpc_packets.h"
 #include "rpc_enums.h"
 #include "debug.h"
+#include "scpi.h"
 
 
 void VXI_Handler::begin ( uint32_t port )
@@ -13,7 +14,7 @@ void VXI_Handler::begin ( uint32_t port )
   vxi_port = port;
   last_packet_time = millis();
 
-  Debug.Progress() << "Listening for VXI commands on TCP port " << port << "\n\n";
+  Debug.Progress() << "Listening for VXI commands on TCP port " << port << "\n";
 }
 
 
@@ -40,7 +41,7 @@ void VXI_Handler::process ()
       last_packet_time = millis();
 
       if ( client ) {
-        Debug.Progress() << "VXI connection established on port " << vxi_port << "\n\n";
+        Debug.Progress() << "\nVXI connection established on port " << vxi_port << "\n";
       }
     }
 
@@ -52,7 +53,7 @@ void VXI_Handler::process ()
 
     if ( bClose )
     {
-      Debug.Progress() << "Closing VXI connection on port " << vxi_port << "\n\n";
+      Debug.Progress() << "Closing VXI connection on port " << vxi_port << "\n";
 
       client.stop();
       tcp_server.stop();
@@ -60,7 +61,6 @@ void VXI_Handler::process ()
     }
   } // endif vxi_port
 }
-
 
 bool VXI_Handler::handle_packet ( WiFiClient & client )
 {
@@ -72,7 +72,7 @@ bool VXI_Handler::handle_packet ( WiFiClient & client )
     rc = rpc::PROG_UNAVAIL;
 
     Debug.Error() << "Invalid program (expected VXI_11_CORE = 0x607AF; received ";
-    Debug.printf("0x%08x)\n\n",(uint32_t)(rpc_request->program));
+    Debug.printf("0x%08x)\n",(uint32_t)(rpc_request->program));
 
   }
   else switch ( rpc_request->procedure )
@@ -100,7 +100,7 @@ bool VXI_Handler::handle_packet ( WiFiClient & client )
 
     default:
 
-      Debug.Error() << "Invalid VXI-11 procedure (received " << (uint32_t)(rpc_request->procedure) << ")\n\n";
+      Debug.Error() << "Invalid VXI-11 procedure (received " << (uint32_t)(rpc_request->procedure) << ")\n";
 
       rc = rpc::PROC_UNAVAIL;
       break;
@@ -115,11 +115,6 @@ bool VXI_Handler::handle_packet ( WiFiClient & client )
   /*  signal to caller whether the port should be closed  */
 
   return bClose;
-}
-
-
-void VXI_Handler::parse_scpi ( char * scpi ) {
-
 }
 
 
@@ -155,11 +150,12 @@ void VXI_Handler::destroy_link ( WiFiClient & client )
 void VXI_Handler::read ( WiFiClient & client )
 {
   /*  We could and should respond to a BSWV? command with the current
-      AWG settings. However, these seem to be ignored. The only
-      response that actually matters is the AWG identification string,
-      so we will
-
-      Generate the response  */
+      AWG settings. The scpi_parse command does identify the type
+      of read needed using the read_type member variable. However,
+      the actual read response seems to be ignored except when the
+      scope asks for the AWG identification string. Since that string
+      can satisfy every read request, we will just generate it every
+      time.  */
 
   char      AWG_ID[] = "IDN-SGLT-PRI SDG1062X";   // ID used to simulate a Siglent AWG
   uint32_t  len = strlen(AWG_ID);
@@ -181,8 +177,15 @@ void VXI_Handler::write ( WiFiClient & client )
   uint32_t  len = write_request->data_len;
 
   /*  The data field in a write request should contain a string
-      with the command for the AWG. It may already be null-
-      terminated, but just in case, we will put in the terminator.  */
+      with the command for the AWG. It may end with '\n', which
+      we will filter out to avoid inconsistent formatting in our
+      Debug output. It may already be null-terminated, but just
+      in case, or in case we have filtered out '\n', we will add
+      in the terminator.  */
+
+  while ( len > 0 && write_request->data[len-1] == '\n' ) {
+    len--;
+  }
 
   write_request->data[len] = 0;
 
@@ -199,4 +202,212 @@ void VXI_Handler::write ( WiFiClient & client )
   write_response->size = len;
 
   send_packet(client, sizeof(write_response_packet));
+}
+
+/*** parse_scpi() ******************************************
+
+  This method parses the SCPI commands and issues the
+  appropriate commands to the AWG.
+
+  The logic is as follows:
+
+  First, tokenize the initiator. If the initiator is the
+  identification request, set the flag for the next read
+  request and return. If it is the channel initiator,
+  get the channel and proceed to the next step.
+
+  Second, tokenize the remainder of the buffer to look
+  for a command. If it has parameters (OUTP and BSWV),
+  call process_parameters to get the parameters (ON, OFF,
+  or <parameter name>,<value> pairs), and set the AWG
+  accordingly. If the command is BSWV?, set the flag
+  for the next read request.
+
+  Repeat step 2 until there are no more commands left
+  to process.
+
+  Note that this function uses the re-entrant strtok_r,
+  not to be thread-safe (we do not anticipate multi-
+  threading on the ESP-01), but to allow an inner and
+  outer loop to work simultaneously.
+
+***********************************************************/
+
+void VXI_Handler::parse_scpi ( char * buffer )
+{
+  char *  initiator;
+  char *  command_line;
+  char *  command;
+  char *  command_context;
+  char *  parameter_context;
+  int     id;
+
+  rw_channel = 0;
+  read_type = rt_none;
+
+  // first, get the initiator and its id
+
+  initiator = strtok_r(buffer, scpi::delimiters[scpi::INITIATOR], &command_context);
+  id = get_id(initiator, scpi::initiators, scpi::initiator_id_cnt);
+
+  // process according to the id of the initiator
+  switch ( id ) {
+
+    /*  if initializer = IDN-SGLT-PRI? then set read_type flag and
+        return - no further processing needed  */
+
+    case scpi::ID_REQUEST:
+
+      read_type = rt_identification;
+      return;
+
+    /*  if initializer = C, extract the channel and drop down
+        to do further processing  */
+
+    case scpi::CHANNEL:
+
+      sscanf(initiator+1, "%d", &rw_channel);
+      break;
+
+    // if neither, we don't recognize this initiator, so we simply return
+
+    default:
+
+      return;
+
+  } // end switch ( initiator id )
+
+  /*  If we get to this point, we have received the channel and are ready
+      to process command lines. The format of each command_line will be
+      COMMAND<space>PARAMETER,VALUE[,PARAMETER,VALUE ...]  */
+
+  command_line = strtok_r(NULL, scpi::delimiters[scpi::COMMAND], &command_context);
+
+  while ( command_line != NULL ) {
+
+    // extract the actual command from the command_line and get its id
+
+    command = strtok_r(command_line, scpi::delimiters[scpi::PRE_PARAMETERS], &parameter_context);
+    id = get_id(command, scpi::commands, scpi::command_id_cnt);
+
+    switch ( id ) {
+
+      /*  if id = OUTP, process parameters looking for "ON" or "OFF"
+          and set AWG accordingly  */
+
+      case scpi::SET_OUTPUT:
+
+        process_parameters(parameter_context);
+        break;
+
+      // if id = BSWV, process wave parameters and set AWG accordingly
+
+      case scpi::SET_PARAMETERS:
+
+        process_parameters(parameter_context);
+        break;
+
+      // if id = BSWV?, set flag so that next read retrieves wave parameters
+
+      case scpi::GET_PARAMETERS:
+
+        read_type = rt_parameters;
+        break;
+
+      // if none of the above, we don't recognize the command, so we ignore it
+
+      default:
+
+        break;
+
+    } // end switch ( command id )
+
+    // extract the next command_line; if any, cycle back through the loop
+
+    command_line = strtok_r(NULL, scpi::delimiters[scpi::COMMAND], &command_context);
+
+  } // end while ( command_line != NULL )
+}
+
+/*** process_parameters()********************************
+
+  This method continues to tokenize the command_line via
+  the supplied parameter_context. It expects to see
+  either ON, OFF, or a parameter pair (name,value). If
+  it recognizes the parameter, it sets the AWG accordingly.
+  It continues until there are no more parameters to
+  process.
+
+********************************************************/
+
+void VXI_Handler::process_parameters ( char * parameter_context )
+{
+  char *  parameter;
+  char *  s_val;
+  double  value;
+  int     id;
+
+  /*  Note that strtok_r here usese NULL for the initial argument,
+      because it is continuing to tokenize the line begun in
+      parse_scpi and pointed to by the parameter_context. This
+      also means that we can get the parameter in the while test. */
+
+  Debug.Progress() << "Setting AWG Channel " << rw_channel << ": ";
+
+  while ( ( parameter = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context ) ) != NULL ) {
+
+    // translate the parameter into a parameter id or -1 if not one we know
+
+    id = get_id ( parameter, scpi::parameters, scpi::parameter_id_cnt );
+
+    // if the parameter is one we recognize, process it
+
+    if ( id >= 0 ) {
+
+      // if the parameter is not ON or OFF, we need to get the following value
+
+      if ( id > scpi::OUTPUT_ON ) {
+        s_val = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context );
+        sscanf(s_val, "%lf", &value);
+
+        Debug.Progress() << parameter << " = " << value << "; ";
+      }
+      
+      // if it is ON or OFF, let value = 0 (OFF) or 1 (ON)
+
+      else {
+        value = id;
+
+        Debug.Progress() << "OUTPUT = " << ( id == scpi::OUTPUT_ON ? "ON" : "OFF" ) << "; ";
+      }
+
+      // ask the AWG to set the parameter and verify the result
+
+    } // end if valid id
+
+  } // end while parameter != NULL
+
+  Debug.Progress() << "\n";
+}
+
+/*** get_id() ******************************************
+
+  This method matches the id against one of the ids in
+  the supplied list. IF there is a match, it returns its
+  index; otherwise, it returns -1.
+
+********************************************************/
+
+int VXI_Handler::get_id ( const char * id_text, const char * id_list[], size_t id_cnt )
+{
+  int id = -1;
+
+  for ( int i = 0; i < id_cnt; i++ ) {
+    if ( strncmp(id_text, id_list[i], strlen(id_list[i])) == 0 ) {
+      id = i;
+      break;
+    }
+  }
+
+  return id;
 }

@@ -20,7 +20,7 @@ void RPC_Bind_Server::begin ()
   udp.begin(rpc::BIND_PORT);
   tcp.begin(rpc::BIND_PORT);
 
-  Debug.Progress() << "Listening for RPC_BIND requests on UDP and TCP port " << rpc::BIND_PORT << "\n\n";
+  Debug.Progress() << "Listening for RPC_BIND requests on UDP and TCP port " << rpc::BIND_PORT << "\n";
 }
 
 /*** loop() ******************************************
@@ -58,11 +58,11 @@ uint32_t RPC_Bind_Server::loop ()
 
   if ( vxi_server.available() ) {
     if ( udp.parsePacket() > 0 ) {
-      Debug.Progress() << "UDP packet received on port " << rpc::BIND_PORT << "\n\n";
+      Debug.Detail() << "\nUDP packet received on port " << rpc::BIND_PORT << "\n";
 
       len = get_packet(udp);
 
-      rc = process_data(len);
+      rc = process_data(len, true);
 
       send_packet(udp,sizeof(bind_response_packet));
 
@@ -72,11 +72,11 @@ uint32_t RPC_Bind_Server::loop ()
       tcp_client = tcp.accept();
     
       if ( tcp_client ) {
-        Debug.Progress() << "TCP packet received on port " << rpc::BIND_PORT << "\n\n";
+        Debug.Detail() << "\nTCP packet received on port " << rpc::BIND_PORT << "\n";
 
         len = get_packet(tcp_client);
 
-        rc = process_data(len);
+        rc = process_data(len, false);
 
         send_packet(tcp_client,sizeof(bind_response_packet));
       }
@@ -86,7 +86,7 @@ uint32_t RPC_Bind_Server::loop ()
   return rc;
 }
 
-uint32_t RPC_Bind_Server::process_data ( int len )
+uint32_t RPC_Bind_Server::process_data ( int len, bool onUDP )
 {
   uint32_t  rc = rpc::SUCCESS;
   uint32_t  port;
@@ -95,14 +95,17 @@ uint32_t RPC_Bind_Server::process_data ( int len )
     rc = rpc::PROG_UNAVAIL;
 
     Debug.Error() << "Invalid program (expected PORTMAP = 0x186A0; received ";
-    Debug.printf("0x%08x)\n\n", (uint32_t)(rpc_request->program));
+    Debug.printf("0x%08x)\n", (uint32_t)(rpc_request->program));
 
   } else if ( rpc_request->procedure != rpc::GET_PORT ) {
     rc = rpc::PROC_UNAVAIL;
 
-    Debug.Error() << "Invalid procedure (expected GET_PORT = 3; received " << (uint32_t)(rpc_request->procedure) << ")\n\n";
+    Debug.Error() << "Invalid procedure (expected GET_PORT = 3; received " << (uint32_t)(rpc_request->procedure) << ")\n";
 
   } else {
+
+    Debug.Progress() << "\nPORTMAP command received on " << ( onUDP ? "UDP" : "TCP" ) << " port " << rpc::BIND_PORT << "\n";
+
     port = vxi_server.allocate();
 
     /*  The logic in the loop() routine should not allow
@@ -111,7 +114,7 @@ uint32_t RPC_Bind_Server::process_data ( int len )
     if ( port == 0 ) {
       rc = rpc::GARBAGE_ARGS;   // not really the appropriate response, but we need to signal failure somehow!
 
-      Debug.Error() << "No vxi_handler available.\n\n";
+      Debug.Error() << "PORTMAP failed: no vxi_handler available.\n";
     }
   }
 

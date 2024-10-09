@@ -21,29 +21,16 @@
 //#define WIFI_MODE_AP
 #define WIFI_MODE_CLIENT
 
-/*  Character string used to simulate a Siglent AWG */
+/*  On the ESP-01 (not the -S version), the LED
+    interferes with Serial, and therefore should
+    not be used. Comment out the following line
+    to prevent use of the LED.  */
 
-const char SIGLENT_ID[] = "IDN-SGLT-PRI SDG1062X";
+//#define USE_LED
 
-/*  The ESP-01 requires a LOW output to turn on
-    the built-in LED */
+/*  The ESP-01S uses LOW to turn on the LED and HIGH to turn it off  */
 
 const int LED_ON = LOW;
 const int LED_OFF = HIGH;
-
-/*  The following enumeration is used by the loop_state variable to
-    indicate the current state when processing the main loop. */
-
-enum Loop_State {
-  ls_passthrough,
-  ls_ready_for_rpc,
-  ls_wait_for_rpc,
-  ls_ready_for_vxi,
-  ls_wait_for_vxi
-};
-
-/*  The loop_state variable is created in espBode.ino */
-
-extern Loop_State loop_state;
 
 #endif

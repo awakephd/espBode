@@ -27,7 +27,7 @@ class RPC_Bind_Server {
 
   protected:
 
-    uint32_t  process_data ( int len );
+    uint32_t  process_data ( int len, bool onUDP );
 
     VXI_Server &    vxi_server;
     WiFiUDP         udp;

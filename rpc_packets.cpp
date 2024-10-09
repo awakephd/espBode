@@ -27,8 +27,8 @@ uint32_t get_packet ( WiFiUDP & udp )
   uint32_t  len = udp.read(packet_buffer, PACKET_BUFFER_SIZE);
 
   if ( len > 0 ) {
-    Debug.Progress() << "Received " << len << " bytes from " << udp.remoteIP().toString() << ":" << udp.remotePort() << "\n\n";
-    Debug.Detail() << Debug.Dump(packet_buffer,len) << "\n\n";
+    Debug.Detail() << "\nReceived " << len << " bytes from " << udp.remoteIP().toString() << ":" << udp.remotePort() << "\n";
+    Debug.Detail() << Debug.Dump(packet_buffer,len) << "\n";
   }
 
   return len;
@@ -47,8 +47,8 @@ uint32_t get_packet ( WiFiClient & client )
   if ( len > 4 ) {
     client.readBytes(packet_buffer,len);
 
-    Debug.Progress() << "Received " << len+4 << " bytes from " << client.remoteIP().toString() << ":" << client.remotePort() << "\n\n";
-    Debug.Detail() << Debug.Dump(data_buffer,len+4) << "\n\n";
+    Debug.Detail() << "\nReceived " << len+4 << " bytes from " << client.remoteIP().toString() << ":" << client.remotePort() << "\n";
+    Debug.Detail() << Debug.Dump(data_buffer,len+4) << "\n";
   }
 
   return len;
@@ -62,8 +62,8 @@ void send_packet ( WiFiUDP & udp, uint32_t len )
   udp.write(packet_buffer,len);
   udp.endPacket();
 
-  Debug.Progress() << "Sent " << len << " bytes to " << udp.remoteIP().toString() << ":" << udp.remotePort() << "\n\n";
-  Debug.Detail() << Debug.Dump(packet_buffer,len) << "\n\n";
+  Debug.Detail() << "\nSent " << len << " bytes to " << udp.remoteIP().toString() << ":" << udp.remotePort() << "\n";
+  Debug.Detail() << Debug.Dump(packet_buffer,len) << "\n";
 }
 
 void send_packet ( WiFiClient & tcp, uint32_t len )
@@ -82,7 +82,6 @@ void send_packet ( WiFiClient & tcp, uint32_t len )
 
   tcp.write(data_buffer,len+4);             // add 4 for the tcp_prefix
 
-  Debug.Progress() << "Sent " << len << " bytes to " << tcp.remoteIP().toString() << ":" << tcp.remotePort() << "\n\n";
-  Debug.Detail() << Debug.Dump(data_buffer,len+4) << "\n\n";
-
+  Debug.Detail() << "\nSent " << len << " bytes to " << tcp.remoteIP().toString() << ":" << tcp.remotePort() << "\n";
+  Debug.Detail() << Debug.Dump(data_buffer,len+4) << "\n";
 }
