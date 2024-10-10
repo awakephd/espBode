@@ -3,40 +3,56 @@
 
 #include <ESP8266WiFi.h>
 #include "wifi_ext.h"
-#include "vxi_handler.h"
 #include "utilities.h"
-
-
-const int n_vxi_handlers = 1;
 
 
 class VXI_Server {
 
   public:
+  
+    enum Read_Type {
+      rt_none           = 0,
+      rt_identification = 1,
+      rt_parameters     = 2
+    };
 
-    VXI_Server ()
-      {}
+  public:
 
-    ~VXI_Server ()
-      {}
+    VXI_Server ();
 
-    void      begin ();
-    uint32_t  loop ();
-    bool      available ();
+    ~VXI_Server ();
+
+    void      loop ();
+
+    void      begin ( bool bNext = false );
+
+    void      begin_next ()
+      { begin(true); }
+
+    bool      available ()
+      { return ( ! client ); }
+
     uint32_t  allocate ();
 
-    static  void      set_timeout ( uint32_t milliseconds )
-      { timeout = milliseconds; }
-
-    static  uint32_t  get_timeout ()
-      { return timeout; }
+    uint32_t  port ()
+      { return vxi_port; }
 
   protected:
 
-    static cyclic_uint32  vxi_port;
-    static uint32_t       timeout;
-    
-    VXI_Handler           vxi_handlers[n_vxi_handlers];
+    void  create_link ();
+    void  destroy_link ();
+    void  read ();
+    void  write ();
+    bool  handle_packet ();
+    void  parse_scpi ( char * buffer );
+    void  process_parameters ( char * parameter_context );
+    int   get_id ( const char * id_text, const char * id_list[], size_t id_cnt );
+
+    WiFiServer_ext  tcp_server;
+    WiFiClient      client;
+    Read_Type       read_type;
+    uint32_t        rw_channel;
+    cyclic_uint32   vxi_port;    
 };
 
 

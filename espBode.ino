@@ -58,20 +58,23 @@ void setup_WiFi ()
     #error PLEASE SELECT WIFI_MODE_AP OR WIFI_MODE_CLIENT!
   #endif
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
 
 #ifdef USE_LED
     digitalWrite(LED_BUILTIN, ! digitalRead(LED_BUILTIN));    // LED will blink slowly while attempting to connect
 #endif
 
-    if ( Debug.Channel() == DEBUG::VIA_SERIAL ) {
+    if ( Debug.Channel() == DEBUG::VIA_SERIAL )
+    {
       Debug.Progress() << ". ";
     }
 
     delay(500);
   }
 
-  if ( Debug.Channel() == DEBUG::VIA_SERIAL ) {
+  if ( Debug.Channel() == DEBUG::VIA_SERIAL )
+  {
     Debug.Progress() << "\nWiFi connected; IP address = " << WiFi.localIP().toString() << "; MAC address = " << WiFi.macAddress() << "\n\n";
   }
 
@@ -100,13 +103,17 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
-  /*  Set desired debug level and output channel. Note that Telnet
-      debugging is unreliable with level = DETAIL - it appears that
-      Telnet gets overwhelmed with all of the input and output that
-      occurs at that level, and eventually the ESP-01 locks up. (This
-      happens even if the OnReceived call-back is eliminated.) Serial
-      debugging at level = DETAIL works flawlessly, and so does
-      Telnet debugging at level = PROGRESS  */
+  /*  Set desired debug level and output channel. Serial debugging
+      at any level works flawlessly, but of course the Serial
+      channel is needed to communicate with the AWG, so it is only
+      suitable when testing without the AWG connected to the ESP-01.
+
+      Telnet debugging allows testing WITH the AWG connected, but
+      note that Telent with level = DETAIL seems to get backed up,
+      and the oscilloscope winds up having to retry several times
+      to keep the communication flowing. It does work, but it slows
+      everything down. However, debugging at level = PROGRESS or
+      below works flawlessly.  */
 
   Debug.Via_Telnet();
   Debug.Level_Progress();
@@ -117,7 +124,8 @@ void setup() {
       it may get confused. Therefore, we will direct the progress message below to serial
       only if Debug is specifically set to output to serial. */
 
-  if ( Debug.Channel() == DEBUG::VIA_SERIAL ) {
+  if ( Debug.Channel() == DEBUG::VIA_SERIAL )
+  {
     Debug.Progress() << "Connecting to " << WIFI_SSID << " ";
   }
 
@@ -128,8 +136,6 @@ void setup() {
 
   /*  Initiailize the various servers - telnet_server,
       rpc_bind_server, and vxi_server.  */
-
-  vxi_server.set_timeout(5000);     // if more than 5 seconds passes without packets, close the vxi_handler
 
   vxi_server.begin();
   rpc_bind_server.begin();

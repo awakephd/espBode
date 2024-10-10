@@ -1,8 +1,8 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "telnet_server.h"
 #include "Streaming.h"
+#include "telnet_server.h"
 
 // if the following is defined, a DEBUG instance named Debug will be created in debug.cpp
 
@@ -160,7 +160,7 @@ class DEBUG : public Print
     Debug << Debug.Progress() << "We're getting there!\n";
 **********************************************************************/
 
-inline Print & operator << ( Print & pstream, DEBUG & debug_arg )
+inline DEBUG & operator << ( Print & pstream, DEBUG & debug_arg )
 {
   return debug_arg;
 }

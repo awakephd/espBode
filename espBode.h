@@ -26,7 +26,7 @@
     not be used. Comment out the following line
     to prevent use of the LED.  */
 
-//#define USE_LED
+#define USE_LED
 
 /*  The ESP-01S uses LOW to turn on the LED and HIGH to turn it off  */
 

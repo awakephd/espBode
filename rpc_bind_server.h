@@ -22,12 +22,12 @@ class RPC_Bind_Server {
     ~RPC_Bind_Server ()
       { udp.stop(); tcp.stop(); };
 
-    void      begin ();
-    uint32_t  loop ();
+    void  begin ();
+    void  loop ();
 
   protected:
 
-    uint32_t  process_data ( int len, bool onUDP );
+    void  process_request ( bool onUDP );
 
     VXI_Server &    vxi_server;
     WiFiUDP         udp;

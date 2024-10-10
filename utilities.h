@@ -2,6 +2,7 @@
 #define UTILITIES_H
 
 #include <stdint.h>
+#include "Streaming.h"
 
 /*** blink() ****************************************************
 
@@ -113,5 +114,24 @@ class cyclic_uint32
    	operator uint32_t ()
  	  	{ return m_data; }
 };
+
+/*  The following allows "transparent" use of a cyclic_uint32
+    in a stream operation without having to explicitly cast
+    it; e.g., instead of having to write
+    
+      Serial << (uint32_t)cyclic_uint32_val;   or
+      Serial << cyclic_uint32_val();
+
+    we can just write
+
+      Serial << cyclic_uint32_val;
+*/
+
+inline Print& operator << ( Print & stream, cyclic_uint32 & value )
+{
+  stream << (uint32_t)value;
+
+  return stream;
+}
 
 #endif
