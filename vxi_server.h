@@ -4,6 +4,7 @@
 #include <ESP8266WiFi.h>
 #include "wifi_ext.h"
 #include "utilities.h"
+#include "awg_server.h"
 
 
 class VXI_Server {
@@ -18,7 +19,7 @@ class VXI_Server {
 
   public:
 
-    VXI_Server ();
+    VXI_Server ( AWG_Server & awg );
 
     ~VXI_Server ();
 
@@ -46,13 +47,14 @@ class VXI_Server {
     bool  handle_packet ();
     void  parse_scpi ( char * buffer );
     void  process_parameters ( char * parameter_context );
-    int   get_id ( const char * id_text, const char * id_list[], size_t id_cnt );
+    int   get_id ( const char * id_text, const char * const id_list[], size_t id_cnt );
 
     WiFiServer_ext  tcp_server;
     WiFiClient      client;
     Read_Type       read_type;
     uint32_t        rw_channel;
-    cyclic_uint32   vxi_port;    
+    cyclic_uint32   vxi_port;
+    AWG_Server &    awg_server;    
 };
 
 

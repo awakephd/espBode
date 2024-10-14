@@ -8,24 +8,13 @@
 #include "rpc_bind_server.h"
 #include "vxi_server.h"
 #include "telnet_server.h"
+#include "awg_fy6900.h"
 
-/*
-#if AWG == FY3200
-  #include "esp_fy3200.h"
-#elif AWG == FY6800
-  #include "esp_fy6800.h"
-#elif AWG == FY6900
-  #include "esp_fy6900.h"
-#elif AWG == JDS2800
-  #include "jds2800.h"
-#else
-  #error "Please select an AWG in esp_config.h"
-#endif
-*/
 
 /*** global variables **************/
 
-VXI_Server      vxi_server;
+AWG_FY6900      awg(2);             // 2 retries if get value != set value
+VXI_Server      vxi_server(awg);
 RPC_Bind_Server rpc_bind_server(vxi_server);
 Telnet_Server   telnet_server;
 
@@ -93,11 +82,9 @@ the telnet server.
 
 *********************************************************************/
 
-void setup() {
-//  if(AWG == FY3200)
-//    Serial.begin(9600);
-//  else
-    Serial.begin(115200);
+void setup()
+{
+    Serial.begin(awg.baud_rate());
 
 #ifdef USE_LED
   pinMode(LED_BUILTIN, OUTPUT);
@@ -109,11 +96,11 @@ void setup() {
       suitable when testing without the AWG connected to the ESP-01.
 
       Telnet debugging allows testing WITH the AWG connected, but
-      note that Telent with level = DETAIL seems to get backed up,
+      note that Telent with level = PACKET seems to get backed up,
       and the oscilloscope winds up having to retry several times
       to keep the communication flowing. It does work, but it slows
       everything down. However, debugging at level = PROGRESS or
-      below works flawlessly.  */
+      even level = SERIAL_IO works flawlessly.  */
 
   Debug.Via_Telnet();
   Debug.Level_Progress();

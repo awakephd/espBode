@@ -12,9 +12,9 @@ namespace scpi {
 
 ***********************************************************/
 
-const char *  initiators[] =  { "IDN-SGLT-PRI?",
-                                "C"
-                              };
+const char * const initiators[] = { "IDN-SGLT-PRI?",
+                                    "C"
+                                  };
 
 enum initiator_id {
   ID_REQUEST        = 0,
@@ -29,9 +29,10 @@ enum initiator_id {
 
 ************************************************************/
 
-const char *  commands[] =  { "OUTP",
-                              "BSWV?",
-                              "BSWV" };
+const char * const commands[] = { "OUTP",
+                                  "BSWV?",
+                                  "BSWV"
+                                };
 
 enum command_id {
   SET_OUTPUT      = 0,
@@ -48,13 +49,14 @@ enum command_id {
 
 ************************************************************/
 
-const char *  parameters[] =  { "OFF",
-                                "ON",
-                                "WVTP",
-                                "FRQ",
-                                "AMP",
-                                "OFST",
-                                "PHSE" };
+const char * const parameters[] = { "OFF",
+                                    "ON",
+                                    "WVTP",
+                                    "FRQ",
+                                    "AMP",
+                                    "OFST",
+                                    "PHSE"
+                                  };
 
 enum parameter_id {
   OUTPUT_OFF        = 0,
@@ -64,7 +66,7 @@ enum parameter_id {
   AMPLITUDE         = 4,
   OFFSET            = 5,
   PHASE             = 6,
-  parameter_id_cnt  = 7
+  parameter_count   = 7
 };
 
 /*** SCPI delimiters ****************************************
@@ -76,11 +78,11 @@ enum parameter_id {
 
 ************************************************************/
 
-const char *  delimiters[] =  { ":",
-                                ";",
-                                " ",
-                                ","
-                              };
+const char * const delimiters[] = { ":",
+                                    ";",
+                                    " ",
+                                    ","
+                                  };
 
 enum delimiter_id {
   INITIATOR         = 0,

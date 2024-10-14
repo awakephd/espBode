@@ -3,10 +3,13 @@
 #include "rpc_enums.h"
 #include "debug.h"
 #include "scpi.h"
+#include "awg_server.h"
+#include "siglent_waves.h"
 
 
-VXI_Server::VXI_Server ()
-  : vxi_port(rpc::VXI_PORT_START, rpc::VXI_PORT_END)
+VXI_Server::VXI_Server ( AWG_Server & awg )
+  : vxi_port(rpc::VXI_PORT_START, rpc::VXI_PORT_END),
+    awg_server(awg)
 {
   /*  We do not start the tcp_server port here, because
       WiFi has likely not yet been initialized. Instead,
@@ -25,8 +28,6 @@ uint32_t VXI_Server::allocate ()
 
   if ( available() ) {
     port = vxi_port;
-
-//    Debug.Progress() << "Listening for VXI commands on TCP port " << port << "\n";
   }
 
   return port;
@@ -61,14 +62,15 @@ void VXI_Server::loop ()
   if ( client )      // if a connection has been established on port
   {
     bool  bClose = false;
-    int   len = get_packet(client);
+    int   len = get_vxi_packet(client);
 
-    if ( len > 0 ) {
+    if ( len > 0 )
+    {
       bClose = handle_packet();
     }
     
-    if ( bClose ) {
-
+    if ( bClose )
+    {
       Debug.Progress() << "Closing VXI connection on port " << vxi_port << "\n";
 
       /*  this method will stop the client and the tcp_server, then rotate
@@ -82,7 +84,8 @@ void VXI_Server::loop ()
   {
     client = tcp_server.accept();   // see if a client is available (data has been sent on port)
 
-    if ( client ) {
+    if ( client )
+    {
       Debug.Progress() << "\nVXI connection established on port " << vxi_port << "\n";
     }
   }
@@ -94,15 +97,15 @@ bool VXI_Server::handle_packet ()
   bool      bClose = false;
   uint32_t  rc = rpc::SUCCESS;
 
-  if ( rpc_request->program != rpc::VXI_11_CORE )
+  if ( vxi_request->program != rpc::VXI_11_CORE )
   {
     rc = rpc::PROG_UNAVAIL;
 
     Debug.Error() << "Invalid program (expected VXI_11_CORE = 0x607AF; received ";
-    Debug.printf("0x%08x)\n",(uint32_t)(rpc_request->program));
+    Debug.printf("0x%08x)\n",(uint32_t)(vxi_request->program));
 
   }
-  else switch ( rpc_request->procedure )
+  else switch ( vxi_request->procedure )
   {
     case rpc::VXI_11_CREATE_LINK:
 
@@ -127,7 +130,7 @@ bool VXI_Server::handle_packet ()
 
     default:
 
-      Debug.Error() << "Invalid VXI-11 procedure (received " << (uint32_t)(rpc_request->procedure) << ")\n";
+      Debug.Error() << "Invalid VXI-11 procedure (received " << (uint32_t)(vxi_request->procedure) << ")\n";
 
       rc = rpc::PROC_UNAVAIL;
       break;
@@ -140,8 +143,8 @@ bool VXI_Server::handle_packet ()
 
   if ( rc != rpc::SUCCESS )
   {
-    rpc_response->rpc_status = rc;
-    send_packet(client, sizeof(rpc_response_packet));
+    vxi_response->rpc_status = rc;
+    send_vxi_packet(client, sizeof(rpc_response_packet));
   }
 
   /*  signal to caller whether the connection should be close (i.e., DESTROY_LINK)  */
@@ -167,15 +170,18 @@ void VXI_Server::create_link ()
   link_response->error = rpc::NO_ERROR;
   link_response->link_id = 0;
   link_response->abort_port = 0;
-  link_response->max_receive_size = PACKET_BUFFER_SIZE;
+  link_response->max_receive_size = VXI_READ_SIZE - 4;
 
-  send_packet(client, sizeof(link_response_packet));
+  send_vxi_packet(client, sizeof(link_response_packet));
 }
 
 
 void VXI_Server::destroy_link ()
 {
   Debug.Progress() << "DESTROY LINK on port " << vxi_port << "\n";
+
+  vxi_response->rpc_status = rpc::SUCCESS;
+  send_vxi_packet(client, sizeof(rpc_response_packet));
 }
 
 
@@ -189,8 +195,8 @@ void VXI_Server::read ()
       can satisfy every read request, we will just generate it every
       time.  */
 
-  char      AWG_ID[] = "IDN-SGLT-PRI SDG1062X";   // ID used to simulate a Siglent AWG
-  uint32_t  len = strlen(AWG_ID);
+  const char *  AWG_ID = awg_server.id();
+  uint32_t      len = strlen(AWG_ID);
 
   Debug.Progress() << "READ DATA on port " << vxi_port << "; data sent = " << AWG_ID << "\n";  
 
@@ -200,13 +206,14 @@ void VXI_Server::read ()
   read_response->data_len = len;
   strcpy(read_response->data,AWG_ID);
 
-  send_packet(client, sizeof(read_response_packet) + len);
+  send_vxi_packet(client, sizeof(read_response_packet) + len);
 }
 
 
 void VXI_Server::write ()
 {
-  uint32_t  len = write_request->data_len;
+  uint32_t  wlen = write_request->data_len;
+  uint32_t  len = wlen;
 
   /*  The data field in a write request should contain a string
       with the command for the AWG. It may end with '\n', which
@@ -215,7 +222,8 @@ void VXI_Server::write ()
       in case, or in case we have filtered out '\n', we will add
       in the terminator.  */
 
-  while ( len > 0 && write_request->data[len-1] == '\n' ) {
+  while ( len > 0 && write_request->data[len-1] == '\n' )
+  {
     len--;
   }
 
@@ -231,9 +239,9 @@ void VXI_Server::write ()
 
   write_response->rpc_status = rpc::SUCCESS;
   write_response->error = rpc::NO_ERROR;
-  write_response->size = len;
+  write_response->size = wlen;
 
-  send_packet(client, sizeof(write_response_packet));
+  send_vxi_packet(client, sizeof(write_response_packet));
 }
 
 /*** parse_scpi() ******************************************
@@ -283,8 +291,8 @@ void VXI_Server::parse_scpi ( char * buffer )
   id = get_id(initiator, scpi::initiators, scpi::initiator_id_cnt);
 
   // process according to the id of the initiator
-  switch ( id ) {
-
+  switch ( id )
+  {
     /*  if initializer = IDN-SGLT-PRI? then set read_type flag and
         return - no further processing needed  */
 
@@ -315,15 +323,15 @@ void VXI_Server::parse_scpi ( char * buffer )
 
   command_line = strtok_r(NULL, scpi::delimiters[scpi::COMMAND], &command_context);
 
-  while ( command_line != NULL ) {
-
+  while ( command_line != NULL )
+  {
     // extract the actual command from the command_line and get its id
 
     command = strtok_r(command_line, scpi::delimiters[scpi::PRE_PARAMETERS], &parameter_context);
     id = get_id(command, scpi::commands, scpi::command_id_cnt);
 
-    switch ( id ) {
-
+    switch ( id )
+    {
       /*  if id = OUTP, process parameters looking for "ON" or "OFF"
           and set AWG accordingly  */
 
@@ -359,6 +367,7 @@ void VXI_Server::parse_scpi ( char * buffer )
     command_line = strtok_r(NULL, scpi::delimiters[scpi::COMMAND], &command_context);
 
   } // end while ( command_line != NULL )
+
 }
 
 /*** process_parameters()********************************
@@ -384,42 +393,56 @@ void VXI_Server::process_parameters ( char * parameter_context )
       parse_scpi and pointed to by the parameter_context. This
       also means that we can get the parameter in the while test. */
 
-  Debug.Progress() << "Setting AWG Channel " << rw_channel << ": ";
+//  Debug.Progress() << "Setting AWG Channel " << rw_channel << ": ";
 
   while ( ( parameter = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context ) ) != NULL ) {
 
     // translate the parameter into a parameter id or -1 if not one we know
 
-    id = get_id ( parameter, scpi::parameters, scpi::parameter_id_cnt );
+    id = get_id ( parameter, scpi::parameters, scpi::parameter_count );
 
     // if the parameter is one we recognize, process it
 
-    if ( id >= 0 ) {
+    if ( id >= 0 )
+    {
+      switch ( id )
+      {
+        case scpi::OUTPUT_OFF:
+        case scpi::OUTPUT_ON:
 
-      // if the parameter is not ON or OFF, we need to get the following value
+          value = id;   // if id is ON or OFF, let value = 0 (OFF) or 1 (ON)
+//        Debug.Progress() << "OUTPUT = " << ( id == scpi::OUTPUT_ON ? "ON" : "OFF" ) << "; ";
 
-      if ( id > scpi::OUTPUT_ON ) {
-        s_val = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context );
-        sscanf(s_val, "%lf", &value);
+          break;
 
-        Debug.Progress() << parameter << " = " << value << "; ";
+        case scpi::WAVE:
+
+          // read the following value ... but discard it and set value = siglent::Sine
+
+          s_val = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context );
+          value = siglent::Sine;
+
+          break;
+
+        default:
+
+          // if the parameter is not ON, OFF, or WAVE, we need to read the following value
+
+          s_val = strtok_r ( NULL, scpi::delimiters[scpi::PARAMETERS], &parameter_context );
+          sscanf(s_val, "%lf", &value);
+
+//        Debug.Progress() << parameter << " = " << value << "; ";
+
+          break;
       }
-      
-      // if it is ON or OFF, let value = 0 (OFF) or 1 (ON)
 
-      else {
-        value = id;
-
-        Debug.Progress() << "OUTPUT = " << ( id == scpi::OUTPUT_ON ? "ON" : "OFF" ) << "; ";
-      }
-
-      // ask the AWG to set the parameter and verify the result
+      awg_server.set(rw_channel,id,value);
 
     } // end if valid id
 
   } // end while parameter != NULL
 
-  Debug.Progress() << "\n";
+//  Debug.Progress() << "\n";
 }
 
 /*** get_id() ******************************************
@@ -430,7 +453,7 @@ void VXI_Server::process_parameters ( char * parameter_context )
 
 ********************************************************/
 
-int VXI_Server::get_id ( const char * id_text, const char * id_list[], size_t id_cnt )
+int VXI_Server::get_id ( const char * id_text, const char * const id_list[], size_t id_cnt )
 {
   int id = -1;
 

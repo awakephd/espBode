@@ -55,15 +55,15 @@ void RPC_Bind_Server::loop ()
 
     if ( udp.parsePacket() > 0 )
     {
-      len = get_packet(udp);
+      len = get_bind_packet(udp);
 
       if ( len > 0 )
       {
-        Debug.Detail() << "\nUDP packet received on port " << rpc::BIND_PORT << "\n";
+        Debug.Packet() << "\nUDP packet received on port " << rpc::BIND_PORT << "\n";
 
         process_request(true);
 
-        send_packet(udp,sizeof(bind_response_packet));
+        send_bind_packet(udp,sizeof(bind_response_packet));
       }
     }
     else
@@ -74,15 +74,15 @@ void RPC_Bind_Server::loop ()
     
       if ( tcp_client )
       {
-        len = get_packet(tcp_client);
+        len = get_bind_packet(tcp_client);
 
         if ( len )
         {
-          Debug.Detail() << "\nTCP packet received on port " << rpc::BIND_PORT << "\n";
+          Debug.Packet() << "\nTCP packet received on port " << rpc::BIND_PORT << "\n";
 
           process_request(false);
 
-          send_packet(tcp_client,sizeof(bind_response_packet));
+          send_bind_packet(tcp_client,sizeof(bind_response_packet));
         }
       }
     }
@@ -94,6 +94,9 @@ void RPC_Bind_Server::process_request ( bool onUDP )
 {
   uint32_t  rc = rpc::SUCCESS;
   uint32_t  port;
+
+  rpc_request_packet * rpc_request = ( onUDP ? udp_request : tcp_request );
+  bind_response_packet * bind_response = ( onUDP ? udp_bind_response : tcp_bind_response );
 
   if ( rpc_request->program != rpc::PORTMAP )
   {

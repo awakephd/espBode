@@ -64,10 +64,10 @@ DEBUG & DEBUG::Dump ( uint8_t * buffer, int len )
 
 size_t DEBUG::write ( uint8_t byte )
 {
-  /*  If the current output level is > the current debug level,
-      discard byte and return 0  */
+  /*  If the current debug level does not allow
+      the current debug level,bdiscard byte and return 0  */
 
-  if ( m_output_level > m_debug_level ) {
+  if ( ! ( m_output_level & m_debug_level ) ) {
     return 0;
 
   /*  Otherwise, store the byte in the buffer. If the byte =

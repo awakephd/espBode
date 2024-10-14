@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "Streaming.h"
 
+
 /*** blink() ****************************************************
 
 A small utility function to allow visual user feedback by
@@ -18,10 +19,71 @@ is used (signaled by USE_LED being defined).
   void blink ( int count, int interval );
 #endif
 
+/*** wait_for_serial() ***************************
+
+  This function waits for serial input to become
+  available. If the optional b_consume is set,
+  it consumes the available input and discards it.
+
+**************************************************/
+
+inline void wait_for_serial ( bool b_consume = false )
+{
+  // wait until something is available
+
+  while ( ! Serial.available() );
+
+  // if b_consume is set, clear the Serial input
+
+  if ( b_consume )
+  {
+    while ( Serial.available() )
+    {
+      Serial.read();
+    }
+  }
+}
+
+/*** pow_ten () ********************************
+
+We could use the pow() function here, but what
+we need is more specialized - we want as quick
+and efficient a way as possible to get a power
+of 10, within a range of exponents of +/- 9.
+
+************************************************/
+
+inline double pow10 ( int p )
+{
+  if ( p < -9 || p > 9 )
+  {
+    return 1;
+  }
+
+  uint32_t  i_val = 1;
+  int       n = std::abs(p);
+
+  for ( int i = 0; i < n; i++ )
+  {
+    i_val *= 10;
+  }
+
+  if ( p < 0 )
+  {
+    return (double)1 / (double)i_val;
+  }
+  else
+  {
+    return (double)i_val;
+  }
+}
+
 /************************************************
+
   std::byteswap is available in C++23. However,
   the Arduino ESP8266 package does not support
   C++23. Therefore, we must supply the function.
+
 ************************************************/
 
 inline uint32_t byteswap ( uint32_t data )
@@ -37,10 +99,12 @@ inline uint32_t byteswap ( uint32_t data )
 }
 
 /****************************************************
+
   The big_end_uint32 class stores 4-byte data in
   big-endian format; it handles automatic conversion
   to the little-endian format used by the ESP8266
   and C++.
+
 ***************************************************/
 
 class big_end_uint32

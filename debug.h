@@ -40,10 +40,12 @@ class DEBUG : public Print
         "dump" of buffers. */
     
     enum db_level {
-      NONE,
-      ERROR,
-      PROGRESS,
-      DETAIL
+      NONE      = 0,
+      ERROR     = 1,
+      PROGRESS  = 2,
+      SERIAL_IO = 4,
+      PACKET    = 8,
+      ALL       = 15
     };
 
   public:
@@ -66,7 +68,7 @@ class DEBUG : public Print
         determines the maximum allowed level of messages that will be output. */
 
     void Level ( db_level level )
-      { m_debug_level = max(min(level,DETAIL),NONE); }
+      { m_debug_level = max(min(level,ALL),NONE); }
 
     db_level Level ()
       { return m_debug_level; }
@@ -78,7 +80,7 @@ class DEBUG : public Print
         it can be used in a stream or as the leftmost member of a stream */
 
     DEBUG & Output ( db_level level )
-      { m_output_level = max(min(level,DETAIL),NONE);
+      { m_output_level = max(min(level,ALL),NONE);
         return *this; }
 
     db_level Output ()
@@ -100,10 +102,13 @@ class DEBUG : public Print
       { m_debug_level = ERROR; }
 
     void Level_Progress ()
-      { m_debug_level = PROGRESS; }
+      { m_debug_level = (db_level)(PROGRESS | ERROR); }
 
-    void Level_Detail ()
-      { m_debug_level = DETAIL; }
+    void Level_Serial_IO ()
+      { m_debug_level = (db_level)(PROGRESS | SERIAL_IO | ERROR); }
+
+    void Level_All ()
+      { m_debug_level = ALL; }
 
     /*  The following member functions set the output level and return a
         reference to the object; thus these functions can be used either
@@ -117,8 +122,12 @@ class DEBUG : public Print
       { m_output_level = PROGRESS;
         return *this; }
 
-    DEBUG & Detail ()
-      { m_output_level = DETAIL;
+    DEBUG & Serial_IO ()
+      { m_output_level = SERIAL_IO;
+        return *this; }
+
+    DEBUG & Packet ()
+      { m_output_level = PACKET;
         return *this; }
 
     // The Dump function will output the contents of the buffer as hex / ascii
