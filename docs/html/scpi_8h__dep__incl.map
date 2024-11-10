@@ -1,0 +1,26 @@
+<map id="scpi.h" name="scpi.h">
+<area shape="rect" id="Node000001" title="Declaration of tables and enumerators used to decode SCPI commands." alt="" coords="221,5,279,31"/>
+<area shape="rect" id="Node000002" href="$awg__server_8h.html" title="Declares the AWG_Server class." alt="" coords="201,79,299,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="253,44,253,79,247,79,247,44"/>
+<area shape="rect" id="Node000003" href="$awg__fy_8h.html" title="Declaration of the AWG_FY class and supporting structures, variables, and enumerations." alt="" coords="96,152,169,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="221,113,153,154,150,149,218,109"/>
+<area shape="rect" id="Node000008" href="$awg__server_8cpp.html" title="Defines the methods of the AWG_Server class." alt="" coords="193,152,307,177"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="253,118,253,152,247,152,247,118"/>
+<area shape="rect" id="Node000009" href="$vxi__server_8h_source.html" title=" " alt="" coords="331,152,423,177"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="284,108,357,149,355,154,281,113"/>
+<area shape="rect" id="Node000004" href="$awg__fy_8cpp.html" title="Defines the methods and supporting tables used by the AWG_FY class." alt="" coords="5,225,92,251"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="110,188,64,227,61,223,107,184"/>
+<area shape="rect" id="Node000005" href="$awg__fy6900_8h.html" title="Declares the AWG_FY6900 class." alt="" coords="116,225,219,251"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="147,189,164,224,159,226,142,191"/>
+<area shape="rect" id="Node000006" href="$awg__fy6900_8cpp.html" title="Defines the methods and translation table of the AWG_FY6900 class." alt="" coords="98,299,215,324"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="166,265,161,299,156,298,161,264"/>
+<area shape="rect" id="Node000007" href="$espBode_8ino.html" title="Main file of espBode on Arduino IDE." alt="" coords="240,299,335,324"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="200,255,269,296,266,301,197,260"/>
+<area shape="poly" id="edge9_Node000009_Node000007" title=" " alt="" coords="346,187,324,205,306,227,298,245,293,264,290,298,284,298,287,264,292,243,301,224,320,201,343,183"/>
+<area shape="rect" id="Node000010" href="$rpc__bind__server_8cpp.html" title="Defines the methods of the RCP_Bind_Server class." alt="" coords="389,299,527,324"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="413,183,435,200,454,224,461,244,464,264,463,298,457,298,458,264,456,245,449,227,432,204,409,187"/>
+<area shape="rect" id="Node000011" href="$rpc__bind__server_8h.html" title="Declares the RPC_Bind_Server class." alt="" coords="315,225,439,251"/>
+<area shape="poly" id="edge11_Node000009_Node000011" title=" " alt="" coords="379,191,379,225,374,225,374,191"/>
+<area shape="poly" id="edge12_Node000011_Node000007" title=" " alt="" coords="353,261,304,301,300,296,350,257"/>
+<area shape="poly" id="edge13_Node000011_Node000010" title=" " alt="" coords="402,258,446,296,443,300,398,262"/>
+</map>

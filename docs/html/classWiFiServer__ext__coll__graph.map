@@ -1,0 +1,5 @@
+<map id="WiFiServer_ext" name="WiFiServer_ext">
+<area shape="rect" id="Node000001" title="Minor extension of WiFiServer class to allow initialization without a port." alt="" coords="5,79,117,104"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="18,5,105,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="64,44,64,79,59,79,59,44"/>
+</map>

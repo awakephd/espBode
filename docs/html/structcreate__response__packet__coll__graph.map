@@ -1,0 +1,5 @@
+<map id="create_response_packet" name="create_response_packet">
+<area shape="rect" id="Node000001" title="Structure of the VXI_11_CREATE_LINK response packet." alt="" coords="5,240,169,265"/>
+<area shape="rect" id="Node000002" href="$classbig__endian__32__t.html" title="Manages storage and conversion of 4&#45;byte big&#45;endian data." alt="" coords="29,5,145,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,45,90,240,85,240,85,45"/>
+</map>

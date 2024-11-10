@@ -42,7 +42,7 @@ void VXI_Server::begin ( bool bNext )
     tcp_server.stop();
 
     /*  Note that vxi_port is not an ordinary uint32_t. It is
-        an instance of class cyclic_uint32, defined in utilities.h,
+        an instance of class cyclic_uint32_t, defined in utilities.h,
         which is constrained to a range of values. The increment
         operator will cause it to go to the next value, automatically
         going back to the starting value once it exceeds the maximum
@@ -160,19 +160,19 @@ void VXI_Server::create_link ()
       be null-terminated, but just in case, we will put in
       the terminator.  */
   
-  link_request->data[link_request->data_len] = 0;
+  create_request->data[create_request->data_len] = 0;
 
-  Debug.Progress() << "CREATE LINK request from \"" << link_request->data << "\" on port " << vxi_port << "\n";
+  Debug.Progress() << "CREATE LINK request from \"" << create_request->data << "\" on port " << vxi_port << "\n";
 
   /*  Generate the response  */
 
-  link_response->rpc_status = rpc::SUCCESS;
-  link_response->error = rpc::NO_ERROR;
-  link_response->link_id = 0;
-  link_response->abort_port = 0;
-  link_response->max_receive_size = VXI_READ_SIZE - 4;
+  create_response->rpc_status = rpc::SUCCESS;
+  create_response->error = rpc::NO_ERROR;
+  create_response->link_id = 0;
+  create_response->abort_port = 0;
+  create_response->max_receive_size = VXI_READ_SIZE - 4;
 
-  send_vxi_packet(client, sizeof(link_response_packet));
+  send_vxi_packet(client, sizeof(create_response_packet));
 }
 
 
@@ -180,8 +180,9 @@ void VXI_Server::destroy_link ()
 {
   Debug.Progress() << "DESTROY LINK on port " << vxi_port << "\n";
 
-  vxi_response->rpc_status = rpc::SUCCESS;
-  send_vxi_packet(client, sizeof(rpc_response_packet));
+  destroy_response->rpc_status = rpc::SUCCESS;
+  destroy_response->error = rpc::NO_ERROR;
+  send_vxi_packet(client, sizeof(destroy_response_packet));
 }
 
 

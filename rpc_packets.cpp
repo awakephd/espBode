@@ -1,9 +1,14 @@
+/*!
+  @file   rpc_packets.cpp
+  @brief  Definitions of variables and basic functions
+          to receive and send RPC/VXI packets.
+*/
+
 #include "rpc_packets.h"
 #include "rpc_enums.h"
 #include "debug.h"
 
-
-/*  buffers to hold packet data  */
+/*  The definition of the buffers to hold packet data	*/
 
 uint8_t  udp_read_buffer[UDP_READ_SIZE];      // only for udp bind requests
 uint8_t  udp_send_buffer[UDP_SEND_SIZE];      // only for udp bind responses
@@ -12,22 +17,16 @@ uint8_t  tcp_send_buffer[TCP_SEND_SIZE];      // only for tcp bind responses
 uint8_t  vxi_read_buffer[VXI_READ_SIZE];      // only for vxi requests
 uint8_t  vxi_send_buffer[VXI_SEND_SIZE];      // only for vxi responses
 
-/*  fill response header with default response data  */
+/*!
+  @brief  Receive an RPC bind request packet via UDP.
 
-void fill_response_header ( uint8_t * buffer, uint32_t xid )
-{
-  rpc_response_packet * rpc_response = (rpc_response_packet *) buffer;
+  This function is called only when the udp connection has
+  data available. It reads the data into the udp_read_buffer.
 
-  rpc_response->xid = xid;                        // transaction id supplied by the request
-  rpc_response->msg_type = rpc::REPLY;            // CALL = 0; REPLY = 1
-  rpc_response->reply_state = rpc::MSG_ACCEPTED;  // MSG_ACCEPTED = 0; MSG_DENIED = 1
-  rpc_response->verifier_l = 0;
-  rpc_response->verifier_h = 0;
-  //rpc_response->rpc_status = rpc::SUCCESS;      // status code will be supplied by the calling function
-}
+  @param  udp		The WiFiUDP connection from which to read.
 
-/*  basic functions to read and to send packet data  */
-
+  @return The length of data received.
+*/
 uint32_t get_bind_packet ( WiFiUDP & udp )
 {
   uint32_t  len = udp.read(udp_request_packet_buffer, UDP_READ_SIZE);
@@ -40,50 +39,79 @@ uint32_t get_bind_packet ( WiFiUDP & udp )
   return len;
 }
 
-uint32_t get_bind_packet ( WiFiClient & client )
+/*!
+  @brief  Receive an RPC bind request packet via TCP.
+
+  This function is called only when the tcp client has data
+  available. It reads the data into the tcp_read_buffer.
+
+  @param  tcp   The WiFiClient connection from which to read.
+  
+  @return The length of data received.
+*/
+uint32_t get_bind_packet ( WiFiClient & tcp )
 {
   uint32_t  len;
 
   tcp_request_prefix->length = 0;                     // set the length to zero in case the following read fails
 
-  client.readBytes(tcp_request_prefix_buffer, 4);     // get the FRAG + LENGTH field
+  tcp.readBytes(tcp_request_prefix_buffer, 4);     // get the FRAG + LENGTH field
 
   len = ( tcp_request_prefix->length & 0x7fffffff );  // mask out the FRAG bit
 
   if ( len > 4 ) {
     len = std::min(len,(uint32_t)(TCP_READ_SIZE-4));              // do not read more than the buffer can hold
 
-    client.readBytes(tcp_request_packet_buffer,len);
+    tcp.readBytes(tcp_request_packet_buffer,len);
 
-    Debug.Packet() << "\nReceived " << len+4 << " bytes from " << client.remoteIP().toString() << ":" << client.remotePort() << "\n";
+    Debug.Packet() << "\nReceived " << len+4 << " bytes from " << tcp.remoteIP().toString() << ":" << tcp.remotePort() << "\n";
     Debug.Packet() << Debug.Dump(tcp_request_prefix_buffer,len+4) << "\n";
   }
 
   return len;
 }
 
-uint32_t get_vxi_packet ( WiFiClient & client )
+/*!
+  @brief  Receive an RPC/VXI command request packet via TCP.
+  
+  This function is called only when the tcp client has data
+  available. It reads the data into the vxi_read_buffer.
+
+  @param  tcp   The WiFiClient connection from which to read.
+  
+  @return The length of data received.
+*/
+uint32_t get_vxi_packet ( WiFiClient & tcp )
 {
   uint32_t  len;
 
   vxi_request_prefix->length = 0;                     // set the length to zero in case the following read fails
 
-  client.readBytes(vxi_request_prefix_buffer, 4);     // get the FRAG + LENGTH field
+  tcp.readBytes(vxi_request_prefix_buffer, 4);     // get the FRAG + LENGTH field
 
   len = ( vxi_request_prefix->length & 0x7fffffff );  // mask out the FRAG bit
 
   if ( len > 4 ) {
     len = std::min(len,(uint32_t)(VXI_READ_SIZE-4));              // do not read more than the buffer can hold
 
-    client.readBytes(vxi_request_packet_buffer, len);
+    tcp.readBytes(vxi_request_packet_buffer, len);
 
-    Debug.Packet() << "\nReceived " << len+4 << " bytes from " << client.remoteIP().toString() << ":" << client.remotePort() << "\n";
+    Debug.Packet() << "\nReceived " << len+4 << " bytes from " << tcp.remoteIP().toString() << ":" << tcp.remotePort() << "\n";
     Debug.Packet() << Debug.Dump(vxi_request_prefix_buffer,len+4) << "\n";
   }
 
   return len;
 }
 
+/*!
+  @brief  Send an RPC bind response packet via UDP.
+
+  This function is called to return the port number on which
+  the VXI_Server is listening. It uses the udp_send_buffer.
+
+  @param  udp   The udp connection on which to send.
+  @param  len	  The length of the response to send.
+*/
 void send_bind_packet ( WiFiUDP & udp, uint32_t len )
 {
   fill_response_header(udp_response_packet_buffer, udp_request->xid);  // get the xid from the request
@@ -96,6 +124,15 @@ void send_bind_packet ( WiFiUDP & udp, uint32_t len )
   Debug.Packet() << Debug.Dump(udp_response_packet_buffer,len) << "\n";
 }
 
+/*!
+  @brief  Send an RPC bind response packet via TCP.
+
+  This function is called to return the port number on which
+  the VXI_Server is listening. It uses the tcp_send_buffer.
+
+  @param  tcp		The WiFiClient to which to send.
+  @param  len		The length of the response to send.
+*/
 void send_bind_packet ( WiFiClient & tcp, uint32_t len )
 {
   fill_response_header(tcp_response_packet_buffer, tcp_request->xid);  // get the xid from the request
@@ -116,6 +153,18 @@ void send_bind_packet ( WiFiClient & tcp, uint32_t len )
   Debug.Packet() << Debug.Dump(tcp_response_prefix_buffer,len+4) << "\n";
 }
 
+/*!
+  @brief  Send a VXI command response packet via TCP.
+
+  This function is called to return the response to the
+  previous command request; the packet includes at least
+  the basic response header plus an error code, but may
+  include additional data as appropriate. It uses the
+  vxi_send_buffer.
+
+  @param  tcp		The WiFiClient to which to send.
+  @param  len		The length of the response to send.
+*/
 void send_vxi_packet ( WiFiClient & tcp, uint32_t len )
 {
   fill_response_header(vxi_response_packet_buffer, vxi_request->xid);
@@ -134,4 +183,24 @@ void send_vxi_packet ( WiFiClient & tcp, uint32_t len )
 
   Debug.Packet() << "\nSent " << len << " bytes to " << tcp.remoteIP().toString() << ":" << tcp.remotePort() << "\n";
   Debug.Packet() << Debug.Dump(vxi_response_prefix_buffer,len+4) << "\n";
+}
+
+/*!
+  @brief  Fill in the standard response header data.
+
+  This function is called by the various send_XYZ functions
+  to fill in the "generic" parts of the response.
+
+  @param  buffer	The buffer to use for the response
+  @param	xid			The transaction id copied from the request
+*/
+void fill_response_header ( uint8_t * buffer, uint32_t xid )
+{
+  rpc_response_packet * rpc_response = (rpc_response_packet *) buffer;
+
+  rpc_response->xid = xid;                        // transaction id supplied by the request
+  rpc_response->msg_type = rpc::REPLY;            // CALL = 0; REPLY = 1
+  rpc_response->reply_state = rpc::MSG_ACCEPTED;  // MSG_ACCEPTED = 0; MSG_DENIED = 1
+  rpc_response->verifier_l = 0;
+  rpc_response->verifier_h = 0;
 }

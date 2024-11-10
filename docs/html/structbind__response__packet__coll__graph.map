@@ -1,0 +1,5 @@
+<map id="bind_response_packet" name="bind_response_packet">
+<area shape="rect" id="Node000001" title="Structure of the RPC bind response packet." alt="" coords="5,181,157,207"/>
+<area shape="rect" id="Node000002" href="$classbig__endian__32__t.html" title="Manages storage and conversion of 4&#45;byte big&#45;endian data." alt="" coords="23,5,139,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="84,44,84,181,79,181,79,44"/>
+</map>

@@ -1,22 +1,40 @@
 #ifndef SIGLENT_WAVES_H
 #define SIGLENT_WAVES_H
 
-/*** SIGLENT_WAVES ****************************
+/*!
+  @file   siglent_waves.h
+  @brief  Declaration and definition of the
+          siglent::BSWV_types enumeration.
 
-  The following enum identifies the basic wave
-  forms recognized by the Siglent AWGs. It is
-  very likely that the only one we care about is
-  the sine wave ... but if we need it, here is
-  the list provided in the WGEN section of the
-  SDS Series Digital Oscilloscope Programming
-  Guide EN11G. Note that we are only listing
-  the BaSic WaVeform types; we will ignore the
-  ARbitrary WaVforms.
+  This enumeration is actually not needed o4 used by the
+  current espBode implementation. Since the Bode plot only
+  uses a sine wave, any SCPI command for wave type is
+  assumed to call for a sine wave. This enumeration is
+  included in case of possible future extension of
+  functionality.
+*/
 
-**********************************************/
-
+/*!
+  @brief  The siglent namespace is used for identifiers specific to Siglent SCPI commands.
+*/
 namespace siglent {
 
+  /*!
+    @brief  Enumeration of the BSWV wave types
+            used by Siglent AWGs and oscilloscopes.
+
+    For Siglent instruments, wave form is expressed in an SCPI
+    command by a string (e.g., "SINE") rather than by a
+    number. It is very likely that the only one we care about
+    is the sine wave. However, if it ever becomes necessary to
+    translate the Siglent waveform into the waveform usedby
+    one of the budget AWGs that espBode-2 covers, it will be
+    helpful to have an integer code to represent the Siglent
+    waveforms. This enumeration is based on the list provided
+    in the WGEN section of the SDS Series Digital Oscilloscope
+    Programming Guide EN11G. Note that we are only listing the
+    BaSic WaVeform types; we are ignoring the ARbitrary WaVforms.
+  */
   enum BSWV_types
   {
     Sine        = 0,
@@ -68,13 +86,13 @@ namespace siglent {
     Acot        = 46,
     Square      = 47,
 
-    wave_count  = 48
+    wave_count  = 48    ///< The number of Siglent waveform ids
   };
 
-  // variables that can be used in translating to/from to above
+  // constants that can be used in translating to/from the Siglent waveform ids
 
-  const bool from_sig = true;
-  const bool to_sig = false;
+  const bool from_sig = true;   ///< true indicates that the tranlsation is from the Siglent to the discount AWG
+  const bool to_sig = false;    ///< false indicates that the translation is from the discount AWG to the Siglent
 };
 
 #endif

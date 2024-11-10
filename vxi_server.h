@@ -53,7 +53,7 @@ class VXI_Server {
     WiFiClient      client;
     Read_Type       read_type;
     uint32_t        rw_channel;
-    cyclic_uint32   vxi_port;
+    cyclic_uint32_t vxi_port;
     AWG_Server &    awg_server;    
 };
 

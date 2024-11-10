@@ -1,29 +1,28 @@
-/*********************************************************
+/*!
+  @file   fy_translate_wave_alternative.cpp
+  @brief  A "full" implementation of the translate_wave function.
 
-  For the sake of completeness, the code below implements
-  the full range of wave shapes for the FY series of AWGs.
-  In terms of a Bode plot, however, the only wave that is
-  needed is a Sine wave, so the default code contained in
-  the awg_fy.cpp file can be much simpler, saving space
-  and complexity. If for some reasong the full range of
-  waves is needed, one can edit awg_fy.cpp to include the
-  code below instead of the default translate_wave code.
-
-**********************************************************/
+  For the sake of completeness, the code in this file implements
+  the full range of wave shapes for the FY series of AWGs. In terms
+  of a Bode plot, the only wave that is needed is a Sine wave, so
+  the default code contained in the awg_fy.cpp file is very simple,
+  saving space and complexity. If for some reasong the full range of
+  waves is needed, one can define USE_ALTERNATIVE_TRANSLATE_WAVE in
+  the awg_fy.h file; this will cause the code below to be used instead
+  of the default, "simple" translate_wave code.
+*/
 
 #ifdef USE_ALTERNATIVE_TRANSLATE_WAVE
 
-/*** wave_table ***********************************
+/*!
+  @brief  The FeelTech wave types indexed according
+          to the matching Siglent wave types.
 
-  The following array holds the FeelTech waves that
-  are analogous to the Siglent waves; it is arranged
-  in the order of Siglent waves. IOW, wave_table[0]
-  contains the FeelTech wave number that matches
-  the Siglent wave 0. A value of -1 means there is
-  no match for this wave.
-
-***************************************************/
-
+  The index of each entry in the following array
+  matches the number of the equivalent Siglent wave
+  form. A value of -1 means there is no FeelTech wave
+  form to match the corresponding Siglent wave form.
+*/
 int8_t wave_table [] = { fy::Sine,          // 0 = Sine 
                          fy::Random_Noi,    // 1 = Noise
                          fy::Stairstep,     // 2 = StairUp

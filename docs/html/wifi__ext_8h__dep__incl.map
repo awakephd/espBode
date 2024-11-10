@@ -1,0 +1,13 @@
+<map id="wifi_ext.h" name="wifi_ext.h">
+<area shape="rect" id="Node000001" title="Declaration and definition of WiFiServer_ext class." alt="" coords="84,5,163,31"/>
+<area shape="rect" id="Node000002" href="$vxi__server_8h_source.html" title=" " alt="" coords="77,79,169,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,44,126,79,121,79,121,44"/>
+<area shape="rect" id="Node000003" href="$espBode_8ino.html" title="Main file of espBode on Arduino IDE." alt="" coords="5,225,100,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="90,113,68,131,51,153,46,171,45,191,51,225,46,226,40,191,40,171,46,151,64,127,86,109"/>
+<area shape="rect" id="Node000004" href="$rpc__bind__server_8cpp.html" title="Defines the methods of the RCP_Bind_Server class." alt="" coords="139,225,278,251"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="158,109,180,127,199,151,207,170,211,190,212,225,207,225,206,191,202,172,194,153,177,131,155,114"/>
+<area shape="rect" id="Node000005" href="$rpc__bind__server_8h.html" title="Declares the RPC_Bind_Server class." alt="" coords="61,152,185,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="126,118,126,152,121,152,121,118"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="104,189,66,227,62,223,100,185"/>
+<area shape="poly" id="edge6_Node000005_Node000004" title=" " alt="" coords="149,184,196,223,193,227,146,188"/>
+</map>

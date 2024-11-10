@@ -1,21 +1,20 @@
+/*!
+  @file   rpc_bind_server.cpp
+  @brief  Defines the methods of the RCP_Bind_Server class.
+*/
+
 #include "rpc_bind_server.h"
 #include "vxi_server.h"
 #include "rpc_packets.h"
 #include "rpc_enums.h"
 #include "debug.h"
 
-
-/*** begin() ***********************************
-
-  The following member function initializes the
-  UDP and TCP servers to listen on the bind_port
-  port.
-
-*************************************************/
-
 void RPC_Bind_Server::begin ()
 {
-//  vxi_server = vs;
+  /*
+    Initialize the UDP and TCP servers to listen on
+    the BIND_PORT port.
+  */
 
   udp.begin(rpc::BIND_PORT);
   tcp.begin(rpc::BIND_PORT);
@@ -23,19 +22,16 @@ void RPC_Bind_Server::begin ()
   Debug.Progress() << "Listening for RPC_BIND requests on UDP and TCP port " << rpc::BIND_PORT << "\n";
 }
 
-/*** loop() ******************************************
-
-  The following member function should be called by
+/*!
+  The loop() member function should be called by
   the main loop of the program to process any UDP or
   TCP bind requests. It will only process requests if
   the vxi_server is available. If so, it will hand off the
   TCP or UDP request to process_request() for validation
   and response. The response will be assembled by
-  process_request(), but it will be sent here since
+  process_request(), but it will be sent from loop() since
   we know whether to send it via UDP or TCP.
-
-******************************************************/
-
+*/
 void RPC_Bind_Server::loop ()
 {
   /*  What to do if the vxi_server is busy?
@@ -47,7 +43,8 @@ void RPC_Bind_Server::loop ()
       reject the message, but the enumerated reasons for rejection
       (RPC_MISMATCH, AUTH_ERROR) do not seem appropriate. For now,
       the solution is to ignore (not read) incoming requests until
-      a vxi_server becomes available.  */
+      a vxi_server becomes available.
+  */
 
   if ( vxi_server.available() )
   {
@@ -89,7 +86,18 @@ void RPC_Bind_Server::loop ()
   }
 }
 
+/*!
+  @brief  Handle the details of processing an incoming request
+          for both TCP and UDP servers.
 
+  This function checks to see if the incoming request is a valid
+  PORT_MAP request. It assembles the response including a
+  success or error code and the port passed by the VXI_Server.
+  Actually sending the response is handled by the caller.
+
+  @param  onUDP   Indicates whether the server calling on this
+                  function is UDP or TCP.
+*/
 void RPC_Bind_Server::process_request ( bool onUDP )
 {
   uint32_t  rc = rpc::SUCCESS;
@@ -120,7 +128,8 @@ void RPC_Bind_Server::process_request ( bool onUDP )
     /*  The logic in the loop() routine should not allow
         the port returned to be zero, since we first checked
         to see if the vxi_server was available. However, we are
-        including the following test just in case.  */
+        including the following test just in case.
+    */
 
     if ( port == 0 )
     {

@@ -1,0 +1,7 @@
+<map id="AWG_FY" name="AWG_FY">
+<area shape="rect" id="Node000001" title="Provides the interface common to all FY&#45;series AWGs." alt="" coords="19,79,97,104"/>
+<area shape="rect" id="Node000003" href="$classAWG__FY6900.html" title="Supplies the translation table needed for the AWG_FY class to serve FY6900 AWGs with recent (&gt;= 1...." alt="" coords="5,152,111,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="61,118,61,152,55,152,55,118"/>
+<area shape="rect" id="Node000002" href="$classAWG__Server.html" title="This is the base class for any AWG that will be controlled via the espBode program." alt="" coords="9,5,107,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="61,44,61,79,55,79,55,44"/>
+</map>

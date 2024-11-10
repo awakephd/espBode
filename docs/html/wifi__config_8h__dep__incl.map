@@ -1,0 +1,5 @@
+<map id="wifi_config.h" name="wifi_config.h">
+<area shape="rect" id="Node000001" title="Configuration details for the wifi connection." alt="" coords="5,5,100,31"/>
+<area shape="rect" id="Node000002" href="$espBode_8ino.html" title="Main file of espBode on Arduino IDE." alt="" coords="5,79,100,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="55,44,55,79,50,79,50,44"/>
+</map>

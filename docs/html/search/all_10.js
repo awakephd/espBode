@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['read_5frequest_0',['read_request',['../rpc__packets_8h.html#aabd202c7dbd01f2ea3d84622c1ce0686',1,'rpc_packets.h']]],
+  ['read_5frequest_5fpacket_1',['read_request_packet',['../structread__request__packet.html',1,'']]],
+  ['read_5fresponse_2',['read_response',['../rpc__packets_8h.html#a1bef56ccc5c11a727ecd19b069c694c4',1,'rpc_packets.h']]],
+  ['read_5fresponse_5fpacket_3',['read_response_packet',['../structread__response__packet.html',1,'']]],
+  ['reason_4',['reason',['../structread__response__packet.html#a534f23a268db1cbe31b070957a110b7b',1,'read_response_packet']]],
+  ['reasons_5',['reasons',['../namespacerpc.html#a9229395837e9d55abe9ee5fc34e224a5',1,'rpc']]],
+  ['rectangle_6',['Rectangle',['../namespacefy.html#a2aff5027d1977b4776d38bd8423a1fbfa5ee620b88b46ffc09138bbd528ae8954',1,'fy']]],
+  ['reject_5fstatus_7',['reject_status',['../namespacerpc.html#af0a14fa51b4a6f20395a71f3f3630b97',1,'rpc']]],
+  ['reply_8',['REPLY',['../namespacerpc.html#ad1887506caa4351b4818edf87e95015aa62ee1ff53a9c29c3ee162ffd58ad9bf8',1,'rpc']]],
+  ['reply_5fstate_9',['reply_state',['../structrpc__response__packet.html#a831026f9ec83f4d83e51f97e6a8be07d',1,'rpc_response_packet::reply_state'],['../structwrite__response__packet.html#a64284d178132ff54ce969dda67f04539',1,'write_response_packet::reply_state'],['../structread__response__packet.html#aebb0619adcaf68af682e4f43d5a3f85d',1,'read_response_packet::reply_state'],['../structdestroy__response__packet.html#a57848b5f9d0ac8070dbefd577a9d5969',1,'destroy_response_packet::reply_state'],['../structcreate__response__packet.html#a16c47189e16747f85f615c5ca3337e84',1,'create_response_packet::reply_state'],['../structbind__response__packet.html#a5e18c46e0aac92fe82a10e518979c065',1,'bind_response_packet::reply_state'],['../namespacerpc.html#ae87fc790a0c66e2ec50b2bc757b13b4f',1,'rpc::reply_state']]],
+  ['reqcnt_10',['REQCNT',['../namespacerpc.html#a9229395837e9d55abe9ee5fc34e224a5a73caa55cc015ed9a6d96d383bf8bec27',1,'rpc']]],
+  ['request_5fsize_11',['request_size',['../structread__request__packet.html#aa2edc292233c1b9369b9b9aa96c32f88',1,'read_request_packet']]],
+  ['retry_12',['retry',['../classAWG__Server.html#afa7676fecac8121bca3799e02f89817c',1,'AWG_Server::retry(uint32_t retries)'],['../classAWG__Server.html#a6abe02cb3bd62c798bb9cf2115e7935c',1,'AWG_Server::retry()']]],
+  ['rpc_13',['rpc',['../namespacerpc.html',1,'']]],
+  ['rpc_5fbind_5fserver_14',['rpc_bind_server',['../classRPC__Bind__Server.html#a76a029b9f960f9044c4576b8c97a7f48',1,'RPC_Bind_Server::RPC_Bind_Server()'],['../espBode_8ino.html#a6ea7852ea03b865c41fa728124829ffe',1,'rpc_bind_server:&#160;espBode.ino'],['../classRPC__Bind__Server.html',1,'RPC_Bind_Server']]],
+  ['rpc_5fbind_5fserver_2ecpp_15',['rpc_bind_server.cpp',['../rpc__bind__server_8cpp.html',1,'']]],
+  ['rpc_5fbind_5fserver_2eh_16',['rpc_bind_server.h',['../rpc__bind__server_8h.html',1,'']]],
+  ['rpc_5fenums_2eh_17',['rpc_enums.h',['../rpc__enums_8h.html',1,'']]],
+  ['rpc_5fmismatch_18',['RPC_MISMATCH',['../namespacerpc.html#af0a14fa51b4a6f20395a71f3f3630b97a733b22c67630eb65d85ebed9dcb22aed',1,'rpc']]],
+  ['rpc_5fpackets_2ecpp_19',['rpc_packets.cpp',['../rpc__packets_8cpp.html',1,'']]],
+  ['rpc_5fpackets_2eh_20',['rpc_packets.h',['../rpc__packets_8h.html',1,'']]],
+  ['rpc_5frequest_5fpacket_21',['rpc_request_packet',['../structrpc__request__packet.html',1,'']]],
+  ['rpc_5fresponse_5fpacket_22',['rpc_response_packet',['../structrpc__response__packet.html',1,'']]],
+  ['rpc_5fstatus_23',['rpc_status',['../namespacerpc.html#a7f4cebceb2fb872fb60fb6d569dd1de0',1,'rpc::rpc_status'],['../structwrite__response__packet.html#ac836dd9254b35bd302eed7b567d44207',1,'write_response_packet::rpc_status'],['../structread__response__packet.html#afd842b878b88342bf59f48b00b2e73dc',1,'read_response_packet::rpc_status'],['../structdestroy__response__packet.html#a22a34064f13b137daaeb9844426211b8',1,'destroy_response_packet::rpc_status'],['../structcreate__response__packet.html#ae36891230005f31038c03c1235d64776',1,'create_response_packet::rpc_status'],['../structbind__response__packet.html#a73201318d8a87cad49b09cb423446af4',1,'bind_response_packet::rpc_status'],['../structrpc__response__packet.html#a55abcb799beb73f8d35354555ab7db70',1,'rpc_response_packet::rpc_status']]],
+  ['rpc_5fversion_24',['rpc_version',['../structwrite__request__packet.html#a4e38580e54fe309ce604e10ea08e2ee5',1,'write_request_packet::rpc_version'],['../structread__request__packet.html#ab4323e46e642e0bab75c433739b6c4b8',1,'read_request_packet::rpc_version'],['../structdestroy__request__packet.html#a34228e23453d4f43b38032c96cce1a3d',1,'destroy_request_packet::rpc_version'],['../structcreate__request__packet.html#addd1ba4504f41cf156840439760f2172',1,'create_request_packet::rpc_version'],['../structbind__request__packet.html#abff478c8bf4f8843c5dd54f434934e02',1,'bind_request_packet::rpc_version'],['../structrpc__request__packet.html#a3d514569c7b06623a04cd579d67f820f',1,'rpc_request_packet::rpc_version']]]
+];

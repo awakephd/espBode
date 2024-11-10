@@ -1,15 +1,10 @@
+/*!
+  @file   utilities.cpp
+  @brief  Defines functions and methods declared in utilities.h.
+*/
+
 #include <Arduino.h>
-#include "espBode.h"
-
-
-/*** blink() ****************************************************
-
-A small utility function to allow visual user feedback by
-blinking the built-in LED a selected number of times at a
-selected interval (specified in milliseconds). This function
-is only defined if USE_LED is defined.
-
-*****************************************************************/
+#include "led_config.h"
 
 #ifdef USE_LED
 

@@ -1,188 +1,316 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+/*!
+  @file   debug.h
+  @brief  Declares the DEBUG class and associated functions.
+*/
+
 #include "Streaming.h"
 #include "telnet_server.h"
 
-// if the following is defined, a DEBUG instance named Debug will be created in debug.cpp
-
+/*!
+  @brief If INSTANTIATE_DEBUG is defined, a DEBUG instance named Debug will be created in debug.cpp
+*/
 #define INSTANTIATE_DEBUG
 
+/*!
+  @brief  Size of buffer used by DEBUG instance.
+*/
 const size_t  DEBUG_BUFFER_SIZE = 128;
 
-/**********************************************************
-  The DEBUG class inherits from Print so that it can use
-  all of its methods and so that it can respond to the
-  methods defined by Streaming.h. It buffers the characters
-  received in an internal buffer. This is not actually
-  necessary for Serial output, but Telnet output does not
-  seem to buffer adequately. Using the internal buffer
-  improves performance significantly.
-**********************************************************/
-
+/*!
+  @brief  Filters and directs debugging messages either to
+          Serial or Telnet.
+        
+  The DEBUG class inherits from Print so that it can use all of its
+  methods and so that it can respond to the methods defined in
+  Streaming.h. DEBUG buffers the characters received in an internal
+  buffer; this is not actually necessary for Serial output, but
+  Telnet output does not seem to buffer adequately. Providing this
+  buffer improves Telnet performance significantly.
+*/
 class DEBUG : public Print
 {
   public:
 
-    // DEBUG will direct output either to Serial or to Telnet
-
+    /*!
+      @brief  Where to direct output (Serial or Telnet)
+    */
     enum db_channel {
-      VIA_SERIAL,
-      VIA_TELNET
+      VIA_SERIAL,     ///< Send debugging output to the Serial port
+      VIA_TELNET      ///< Send debugging output through the Telnet server
     };
 
-    /*  DEBUG can selectively omit messages depending on the currently-set
-        debug_level. The default is ERROR, for which only errors
-        are reported. The PROGRESS level will output progress messages
-        (e.g., connection established, command sent, etc.) in addition to
-        error messages. The DETAIL level will output errors and progress,
-        but also will allow exhaustive debugging information such as the
-        "dump" of buffers. */
-    
-    enum db_level {
-      NONE      = 0,
-      ERROR     = 1,
-      PROGRESS  = 2,
-      SERIAL_IO = 4,
-      PACKET    = 8,
-      ALL       = 15
+    /*!
+      @brief  Which types of debugging information to output.
+
+      DEBUG filters which message to output depending on the current value
+      of the m_filter member. Filters can be combined as desired.
+    */
+    enum db_filter {
+      NONE      = 0,    ///< Suppress all debugging output
+      ERROR     = 1,    ///< Include messages marked as ERROR type
+      PROGRESS  = 2,    ///< Include messages marked as PROGRESS type, e.g., connection established
+      SERIAL_IO = 4,    ///< Include messages marked as SERIAL_IO, e.g., data sent to / received from the Serial port
+      PACKET    = 8,    ///< Include messages marked as PACKET type, e.g., data sent to / received from WiFi
+      ALL       = 15    ///< Combine all of the above
     };
 
   public:
 
-    DEBUG ( db_channel channel = VIA_SERIAL, db_level level = ERROR )
-      : m_channel(channel), m_debug_level(level), m_output_level(ERROR), index(0)
+    /*!
+      @brief  Constructor can optionally set the channel and filter.
+
+      @param  channel VIA_SERIAL or VIA_TELNET
+      @param  filter  NONE, ERROR, PROGRESS, etc. (or any combination)
+    */
+    DEBUG ( db_channel channel = VIA_SERIAL, db_filter filter = ERROR )
+      : m_channel(channel), m_filter(filter), m_output_type(NONE), index(0)
       {}
 
-    /*  The m_channel field, which can be set by Channel() or in the constructor,
-        determines whether output will go to Serial or to Telnet. Note that it
-        is acceptable to switch back and forth between these options. */
-  
+    /*!
+      @brief  Set whether output is directed to Serial or Telnet.
+      
+      Note that it is acceptable to switch back and forth between
+      Serial and Telnet output at any time.
+
+      @param  channel VIA_SERIAL or VIA_TELNET  
+    */
     void Channel ( db_channel channel )
       { m_channel = max(min(channel,VIA_TELNET),VIA_SERIAL); }
     
+    /*!
+      @brief  Return the current output channel.
+
+      @return VIA_SERIAL or VIA_TELNET
+    */
     db_channel Channel ()
       { return m_channel; }
 
-    /*  The m_debug_level field, which can be set by Level() or set in the constructor,
-        determines the maximum allowed level of messages that will be output. */
+    /*!
+      @brief  Determine which debugging messages are output.
 
-    void Level ( db_level level )
-      { m_debug_level = max(min(level,ALL),NONE); }
+      Filter determines which message types DEBUG will output.
+      Other methods are used to indicate the message type for
+      any given message.
 
-    db_level Level ()
-      { return m_debug_level; }
+      @param  filter  NONE, ERROR, PROGRESS, etc. (or any combination)
+    */
+    void Filter ( db_filter filter )
+      { m_filter = max(min(filter,ALL),NONE); }
 
-    /*  The m_output_level field, which can be set by Output() or via a stream
-        operator (see below), indicates the level of any output that follows.
-        Only if the output level <= debug_level will output be sent to Serial
-        or to Telnet. This function returns a reference to its object so that
-        it can be used in a stream or as the leftmost member of a stream */
+    /*!
+      @brief  Return the current filter setting.
 
-    DEBUG & Output ( db_level level )
-      { m_output_level = max(min(level,ALL),NONE);
+    */
+    db_filter Filter ()
+      { return m_filter; }
+
+    /*!
+      @brief  Set the type of output for any DEBUG messages that follow.
+
+      The m_output_type can be set by Output() or via a stream operator.
+      It indicates the type of any following DEBUG messages until a new
+      m_output_level is set. Only if (output type & filter) != 0
+      will output be sent to Serial or to Telnet. Typically the output
+      type will be set to only one of the filter options, but nothing
+      prevents setting the output to a combination of types.
+      
+      @param  type  NONE, ERROR, PROGRESS, etc.
+
+      @return A reference to the DEBUG object (thus allowing use in a stream or as the leftmost member of a stream)
+    */
+    DEBUG & Output ( db_filter type )
+      { m_output_type = max(min(type,ALL),NONE);
         return *this; }
 
-    db_level Output ()
-      { return m_output_level; }
+    /*!
+      @brief  Return the current output type.
 
-    /*  The following member functions are shortcuts for setting the channel
-        and debug level */
-    
+      @return NONE, ERROR, PROGRESS, etc.
+    */
+    db_filter Output ()
+      { return m_output_type; }
+
+    /*!
+      @brief  Shortcut method for setting output channel to Serial.
+    */
     void Via_Serial ()
       { m_channel = VIA_SERIAL; }
 
+    /*!
+      @brief  Shortcut method for setting output channel to Telnet.
+    */
     void Via_Telnet ()
       { m_channel = VIA_TELNET; }
     
-    void Level_None ()
-      { m_debug_level = NONE; }
+    /*!
+      @brief  Shortcut method for shutting off all output.
+    */
+    void Filter_None ()
+      { m_filter = NONE; }
     
-    void Level_Error ()
-      { m_debug_level = ERROR; }
+    /*!
+      @brief  Shortcut method for outputting only ERROR type messages.
+    */
+    void Filter_Error ()
+      { m_filter = ERROR; }
 
-    void Level_Progress ()
-      { m_debug_level = (db_level)(PROGRESS | ERROR); }
+    /*!
+      @brief  Shortcut method for outputting ERROR or PROGRESS type messages.
+    */
+    void Filter_Progress ()
+      { m_filter = (db_filter)(PROGRESS | ERROR); }
 
-    void Level_Serial_IO ()
-      { m_debug_level = (db_level)(PROGRESS | SERIAL_IO | ERROR); }
+    /*!
+      @brief  Shortcut method for outputting ERROR, PROGRESS, or SERIAL_IO type messages.
+    */
+    void Filter_Serial_IO ()
+      { m_filter = (db_filter)(PROGRESS | SERIAL_IO | ERROR); }
 
-    void Level_All ()
-      { m_debug_level = ALL; }
+    /*!
+      @brief  Shortcut method for outputting all types of messages.
+    */
+    void Filter_All ()
+      { m_filter = ALL; }
 
-    /*  The following member functions set the output level and return a
-        reference to the object; thus these functions can be used either
-        as part of a stream or as the leftmost member of a stream operation. */
+    /*!
+      @brief  Set output type as ERROR.
+      
+      Because this method returns a reference to the DEBUG object,
+      it can be used either as part of a stream or as the leftmost
+      member of a stream operation.
 
+      @return Reference to the DEBUG object
+    */
     DEBUG & Error ()
-      { m_output_level = ERROR;
+      { m_output_type = ERROR;
         return *this; }
 
+    /*!
+      @brief  Set output type as PROGRESS.
+      
+      Because this method returns a reference to the DEBUG object,
+      it can be used either as part of a stream or as the leftmost
+      member of a stream operation.
+
+      @return Reference to the DEBUG object
+    */
     DEBUG & Progress ()
-      { m_output_level = PROGRESS;
+      { m_output_type = PROGRESS;
         return *this; }
 
+    /*!
+      @brief  Set output type as SERIAL_IO.
+      
+      Because this method returns a reference to the DEBUG object,
+      it can be used either as part of a stream or as the leftmost
+      member of a stream operation.
+
+      @return Reference to the DEBUG object
+    */
     DEBUG & Serial_IO ()
-      { m_output_level = SERIAL_IO;
+      { m_output_type = SERIAL_IO;
         return *this; }
 
+    /*!
+      @brief  Set output type as PACKET.
+      
+      Because this method returns a reference to the DEBUG object,
+      it can be used either as part of a stream or as the leftmost
+      member of a stream operation.
+
+      @return Reference to the DEBUG object
+    */
     DEBUG & Packet ()
-      { m_output_level = PACKET;
+      { m_output_type = PACKET;
         return *this; }
 
-    // The Dump function will output the contents of the buffer as hex / ascii
+    /*!
+      @brief  Output the contents of a buffer as hex and ASCII.
 
+      The contents of the buffer are output on the current channel
+      (Serial or Telnet) 16 bytes per line, with the left side
+      formatted as four sets of four bytes in hex, and the right
+      side as a string of ASCII characters.
+
+      @param  buffer  Pointer to the data to be dumped
+      @param  len     Length of the data to be dumped
+
+      @return Return a reference to the DUMP object to allow streaming
+    */
     DEBUG & Dump ( uint8_t * buffer, int len );
 
-    /*  The write method is the only pure virtual method of Print. It must
-        output the provided byte and return 1 if success or 0 if failure.
-        If the output_level > the debug level, the byte will be discarded
-        and the function will return 0 (failure). If the output level <=
-        the debug level, we will store the byte in the buffer until either
-        the received byte = '\n' or the buffer is full; at that point we
-        call flush to send the buffer out to either Serial or Telnet. */
+    /*!
+      @brief  Override the write() method of the Print class.
 
+      The write method is the only pure virtual method of Print. It must
+      output the provided byte and return 1 if success or 0 if failure.
+      If the current output type does not have a bit in common with the
+      current filter setting, the byte will be discarded and the method
+      will return 0 (failure). If the current output type does have a
+      bit in common with the current filter setting, the method stores
+      the byte in the buffer until either the received byte = '\\n' or
+      the buffer is full; at that point the buffer is flushed out to
+      either Serial or Telnet according to the current channel setting.
+
+      @param  byte  The current byte of data to filter or buffer.
+
+      @return 0 if the byte is discarded; 1 if it is output
+    */
     virtual size_t  write ( uint8_t byte );
 
-    /*  Flush the buffer to either Serial or Telnet.  */
+    /*!
+      @brief  Send the contents of the buffer to Serial or Telnet.
 
+      This is an override of the virtual flush() function from the
+      Print class. If there is any data in the buffer, it is sent
+      to Serial or to Telnet (according to m_channel) and the buffer
+      index is reset.
+    */
     virtual void    flush();
 
   private:
 
-    uint8_t     buffer[DEBUG_BUFFER_SIZE];
-    size_t      index;
+    uint8_t     buffer[DEBUG_BUFFER_SIZE];    ///< Buffer to improve performance
+    size_t      index;                        ///< Position for next entry into the buffer
 
-    db_channel  m_channel;
-    db_level    m_debug_level;
-    db_level    m_output_level;
+    db_channel  m_channel;                    ///< The current output channel (VIA_SERIAL or VIA_TELNET)
+    db_filter   m_filter;                     ///< The current filter to determine which messages are output
+    db_filter   m_output_type;                ///< The current type to consider any output received
 };
 
-/********************************************************************
-  The following function allows a DEBUG& to be passed to a Print& via
-  the stream operator. This allows the use of functions in the DEBUG
-  class that set a condition within a stream.
+/*!
+  @brief  Helper function to facilitate stream operations on DEBUG objects.
+
+  This function overrides the << operator to allow a DEBUG& object
+  to be streamed to a Print& object. This allows the use of DEBUG
+  methods that set a condition within the stream.
 
   Examples:
     
-    Debug << Debug.Type(DEBUG::ERROR) << "Something bad happened!\n";
-    Debug << Debug.Progress() << "We're getting there!\n";
-**********************************************************************/
+    Debug << Debug.Type(DEBUG::ERROR) << "Something bad happened!\n"\n
 
+    Debug << Debug.Progress() << "We're getting there!\n";
+
+  @param  pstream   Reference to a Print object (destination of the stream operation)
+  @param  debug_arg A method that returns a reference to the DEBUG object
+
+  @return The debug_arg is passed through as the return object.
+*/
 inline DEBUG & operator << ( Print & pstream, DEBUG & debug_arg )
 {
   return debug_arg;
 }
 
-/*******************************************************
-  If we are instantiating an instance of DEBUG (carried
-  out in debug.cpp), we need to let others know that
-  it exists.
-********************************************************/
+/*  If we are instantiating an instance of DEBUG (carried
+    out in debug.cpp), we need to let others know that
+    it exists.
+*/
 
 #ifdef INSTANTIATE_DEBUG
   extern DEBUG Debug;
 #endif
-
 
 #endif

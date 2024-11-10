@@ -1,14 +1,13 @@
 #include "debug.h"
 
-#ifdef INSTANTIATE_DEBUG
-  DEBUG     Debug;
-#endif
+/*!
+  @file   debug.cpp
+  @brief  Definitions of the methods the DUMP class
+*/
 
-/***************************************************
-  The Dump member function outputs the contents of
-  a buffer in both hex and (where valid) ascii via
-  the DEBUG output channel.
-****************************************************/
+#ifdef INSTANTIATE_DEBUG
+  DEBUG     Debug;    ///< Global instance of DEBUG, instantiated in debug.cpp if INSTANTIATE_DEBUG is defined
+#endif
 
 DEBUG & DEBUG::Dump ( uint8_t * buffer, int len )
 {
@@ -17,67 +16,67 @@ DEBUG & DEBUG::Dump ( uint8_t * buffer, int len )
   uint8_t   c;
   int       i, j;
   
-  ascii_buffer[16] = 0;
+  /*  The ascii_buffer is used to accumulate character representations
+      for each 16-byte line of data.
+  */
+
+  ascii_buffer[16] = 0;   // null-terminate the 16-byte character string
 
   while ( len > 0 ) {
-    ab = ascii_buffer;
+    ab = ascii_buffer;    // pointer to the current location in the buffer
 
     if ( len < 16 ) {
-      ascii_buffer[len] = 0;
+      ascii_buffer[len] = 0;    // if the last line of data is less than 16 bytes, we need to terminate accordingly
     }
 
-    for ( i = 0; i < 16; i += 4 ) {
+    for ( i = 0; i < 16; i += 4 ) {   // bytes are output in groups of four
       for ( j = 0; j < 4; j++ ) {      
-        if ( i + j < len ) {
+        if ( i + j < len ) {          // if there is still data to print ...
           c = *buffer;
           buffer++;
 
-          printf("%02x ", c);
+          printf("%02x ", c);         // print the byte of data as 2-digit hex
 
-          *ab = ( c < 0x20 ? '.' : ( c > 0x7f ? '.' : c ));
+          *ab = ( c < 0x20 ? '.' : ( c > 0x7f ? '.' : c ));     // if the byte is not a printable character, substitute '.'
           ab++;
         } else {
-          print("   ");
+          print("   ");     // if no data left, print blank spaces
         }
       }
 
-      print(" ");
+      print(" ");     // extra space between each set of four bytes
     }
 
-    println(ascii_buffer);
+    println(ascii_buffer);    // print string represenation after the 16 bytes
     len -= 16;
   }
   
-  return *this;
+  return *this;     // return reference to DUMP object to allow streaming
 }
-
-/**************************************************************
-  The following member function is an override of the pure
-  virtual write() function in the Print class. This is the
-  function on which prinf(), printf(), and other Print output
-  functions depend on. If the current output level > the
-  current debug level, we simply discard the character.
-  Otherwise, to improve performance, we store the character
-  in the buffer; when either the charactger = '\n' or the
-  buffer is full, we flush the buffer out to Serial or Telnet.
-**************************************************************/
 
 size_t DEBUG::write ( uint8_t byte )
 {
-  /*  If the current debug level does not allow
-      the current debug level,bdiscard byte and return 0  */
+  /*  If the current filter setting does not include
+      the current output type, discard the byte and
+      return 0
+  */
 
-  if ( ! ( m_output_level & m_debug_level ) ) {
+  if ( ! ( m_output_type & m_filter ) )
+  {
     return 0;
 
   /*  Otherwise, store the byte in the buffer. If the byte =
       '\n' or the buffer is full, flush it to the current
-      output channel.  */
+      output channel.
+  */
 
-  } else {
+  }
+  else
+  {
     buffer[index++] = byte;
 
-    if ( byte == '\n' || index >= DEBUG_BUFFER_SIZE ) {
+    if ( byte == '\n' || index >= DEBUG_BUFFER_SIZE )
+    {
       flush();
     }
 
@@ -86,14 +85,6 @@ size_t DEBUG::write ( uint8_t byte )
     return 1;
   }
 }
-
-
-/**************************************************************
-  The following member function is an override of the virtual
-  flush() function in Print. This function sends the contents
-  of the buffer, if any, either to Serial or to Telnet and
-  resets the buffer.
-**************************************************************/
 
 void DEBUG::flush()
 {

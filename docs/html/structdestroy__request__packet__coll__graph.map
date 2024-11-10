@@ -1,0 +1,5 @@
+<map id="destroy_request_packet" name="destroy_request_packet">
+<area shape="rect" id="Node000001" title="Structure of the VXI_11_DESTROY_LINK request packet." alt="" coords="5,240,167,265"/>
+<area shape="rect" id="Node000002" href="$classbig__endian__32__t.html" title="Manages storage and conversion of 4&#45;byte big&#45;endian data." alt="" coords="28,5,144,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,45,89,240,83,240,83,45"/>
+</map>

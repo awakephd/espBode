@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['scpi_0',['scpi',['../namespacescpi.html',1,'']]],
+  ['scpi_2eh_1',['scpi.h',['../scpi_8h.html',1,'']]],
+  ['sds1004x_5fbode_2',['PC and Python: sds1004x_bode',['../index.html#autotoc_md2',1,'']]],
+  ['send_5fbind_5fpacket_3',['send_bind_packet',['../rpc__packets_8h.html#a3083bc4561f82270a1e77888eba163a2',1,'send_bind_packet(WiFiClient &amp;tcp, uint32_t len):&#160;rpc_packets.cpp'],['../rpc__packets_8h.html#ab419c18e9916400e53b337f06ef3a067',1,'send_bind_packet(WiFiUDP &amp;udp, uint32_t len):&#160;rpc_packets.cpp'],['../rpc__packets_8cpp.html#a3083bc4561f82270a1e77888eba163a2',1,'send_bind_packet(WiFiClient &amp;tcp, uint32_t len):&#160;rpc_packets.cpp'],['../rpc__packets_8cpp.html#ab419c18e9916400e53b337f06ef3a067',1,'send_bind_packet(WiFiUDP &amp;udp, uint32_t len):&#160;rpc_packets.cpp']]],
+  ['send_5fvxi_5fpacket_4',['send_vxi_packet',['../rpc__packets_8h.html#ab7e3de38fbce8ad27f6eb449843093bf',1,'send_vxi_packet(WiFiClient &amp;tcp, uint32_t len):&#160;rpc_packets.cpp'],['../rpc__packets_8cpp.html#ab7e3de38fbce8ad27f6eb449843093bf',1,'send_vxi_packet(WiFiClient &amp;tcp, uint32_t len):&#160;rpc_packets.cpp']]],
+  ['serial_5fio_5',['serial_io',['../classDEBUG.html#a9f9ea38509772a8125829895d09d989baa44515cc52fbedd5dee68ea026903861',1,'DEBUG::SERIAL_IO'],['../classDEBUG.html#a906c9260e67a9b81142e7630ffb8405e',1,'DEBUG::Serial_IO()']]],
+  ['set_6',['set',['../classAWG__Server.html#aef620ce5236269b73435cdd93f93abde',1,'AWG_Server::set()'],['../classAWG__FY.html#a53db6b73a57a5c20e21284583efa4c99',1,'AWG_FY::set()']]],
+  ['set_5fexponent_7',['set_exponent',['../structparam__translator.html#a4f6248a4af83da1483ee8289079af00c',1,'param_translator']]],
+  ['set_5foutput_8',['SET_OUTPUT',['../namespacescpi.html#af821077a42e6ae1fc6457bb7304bad2da8b7262faaa1822be71fb9c9c6cb606f6',1,'scpi']]],
+  ['set_5fparameters_9',['SET_PARAMETERS',['../namespacescpi.html#af821077a42e6ae1fc6457bb7304bad2dabfadf86f6ffba56b7592b10918b083e4',1,'scpi']]],
+  ['set_5fprecision_10',['set_precision',['../structparam__translator.html#a94a6adbb9400b9765714b9dba5bf1cdd',1,'param_translator']]],
+  ['set_5ftype_11',['set_type',['../structparam__translator.html#a41fa80c69c757353c3ac7f370d4a04cb',1,'param_translator']]],
+  ['set_5fwidth_12',['set_width',['../structparam__translator.html#aac63bc066d41983666bd271ca31d2d3c',1,'param_translator']]],
+  ['setup_13',['setup',['../espBode_8ino.html#a4fc01d736fe50cf5b977f755b675f11d',1,'espBode.ino']]],
+  ['setup_5fwifi_14',['setup_WiFi',['../espBode_8ino.html#ae9479085c95b6ac727e0ef3dcacaabb2',1,'espBode.ino']]],
+  ['siglent_15',['siglent',['../namespacesiglent.html',1,'']]],
+  ['siglent_5fwaves_2eh_16',['siglent_waves.h',['../siglent__waves_8h.html',1,'']]],
+  ['sine_17',['Sine',['../namespacefy.html#a2aff5027d1977b4776d38bd8423a1fbfa7f9673a3e5d2c1b2333119efe42481f5',1,'fy']]],
+  ['size_18',['size',['../structwrite__response__packet.html#a06417689ddeea5bcebab054bd579a17a',1,'write_response_packet']]],
+  ['square_19',['Square',['../namespacefy.html#a2aff5027d1977b4776d38bd8423a1fbfa9f27ccb23bea62d30fb5b5f9896828ff',1,'fy']]],
+  ['static_5fip_20',['STATIC_IP',['../wifi__config_8h.html#a1ae41ea1a325699ddb0a54ec05c464dc',1,'wifi_config.h']]],
+  ['success_21',['SUCCESS',['../namespacerpc.html#a7f4cebceb2fb872fb60fb6d569dd1de0abde45b0db7945f831ea99ca45790a55b',1,'rpc']]],
+  ['supported_20awg_20models_22',['Supported AWG Models',['../index.html#autotoc_md6',1,'']]],
+  ['syntax_5ferror_23',['SYNTAX_ERROR',['../namespacerpc.html#ab13937a4bec405a1a738500179709ebaae2fad38609c0dc7a425f0abee4ba0011',1,'rpc']]]
+];
